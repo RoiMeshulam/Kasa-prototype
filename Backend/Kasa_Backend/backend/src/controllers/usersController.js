@@ -48,7 +48,7 @@ const signIn = async (req, res) => {
 
 // Register a new user
 const signUp = async (req, res) => {
-  const { email, password, name, role } = req.body;
+  const { email, password, name, phoneNumber } = req.body;
 
   try {
     // Create a new user in Firebase Authentication
@@ -60,14 +60,16 @@ const signUp = async (req, res) => {
     // Save additional details in Firebase Realtime Database
     await rtdb.ref(`users/${userRecord.uid}`).set({
       name,
-      role,
+      phoneNumber,
+      email
     });
 
     res.status(201).json({
       message: "User registered successfully",
       uid: userRecord.uid,
       name,
-      role,
+      email,
+      phoneNumber,
     });
   } catch (error) {
     res.status(400).json({ error: error.message });

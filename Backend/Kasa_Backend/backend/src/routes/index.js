@@ -8,7 +8,7 @@ const router = express.Router();
 
 // all routes
 // router.use('/scans', scansRoutes);
-// router.use("/users",userRoutes);
+router.use("/users",userRoutes);
 router.use("/mechines",mechinesRoutes);
 router.use("/bottles",bottlesRoutes);
 
