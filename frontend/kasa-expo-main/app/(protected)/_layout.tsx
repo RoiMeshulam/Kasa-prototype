@@ -1,16 +1,15 @@
-import { AuthContext } from "@/store/authContext";
+import { useGlobalContext } from "@/store/globalContext";
 import { Redirect, Stack } from "expo-router";
-import { useContext } from "react";
 
 export const unstable_settings = {
   initialRouteName: "(tabs)",
 };
 
 const ProtectedLayout = () => {
-  const { isLoggedIn } = useContext(AuthContext);
+  const { isConnected } = useGlobalContext(); // שימוש ב־globalContext במקום AuthContext
 
-  if (!isLoggedIn) {
-    return <Redirect href={"/login"} />;
+  if (!isConnected) {
+    return <Redirect href="/(auth)/login" />;
   }
 
   return (
