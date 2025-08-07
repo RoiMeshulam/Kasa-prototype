@@ -50,7 +50,7 @@ export default function HomeScreen() {
             <InfoCard amount={users[0].balance} title={"Total Earned"} money />
           </View>
           <Link
-            href={"/(protected)/(tabs)/(home)/scanner"}
+            href={"/(protected)/(tabs)/(home)/scannerScreen"}
             className="bg-green-500 rounded-md py-3 text-center "
             asChild
           >

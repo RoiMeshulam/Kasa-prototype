@@ -44,6 +44,13 @@ const MachineScreen = () => {
       // });
     });
 
+    socket.on("bottle_data", ({ bottle, remaining }) => {
+      console.log("🍾 Bottle received on machine:", bottle, "Remaining:", remaining);
+      // כאן תוכל להציג את פרטי הבקבוק או להפעיל אנימציה במכונה
+    });
+
+    
+
     socket.on("session_closed", () => {
       console.log("🛑 Session closed");
       setSessionId(null);

@@ -4,7 +4,7 @@ const sessionsController = require("../controllers/sessionsController");
 const authenticateToken = require("../middlewares/authMiddleware");
 
 
-router.post("/", authenticateToken, sessionsController.createSession);
+router.post("/", sessionsController.createSession);
 
 
 module.exports = router;
