@@ -1,7 +1,9 @@
 const { Server } = require("socket.io");
 
 let io;
-const activeSessions = new Map(); // sessionId -> { userId, machineId, clientSocketId, machineSocketId }
+const machineSockets = new Map();  // qrId → socketId
+const userSockets = new Map();     // userId → socketId
+const activeSessions = new Map();  // sessionId → { machineId, userId, bottleCount }
 
 const initWebSocket = (server) => {
   io = new Server(server, {
@@ -12,51 +14,59 @@ const initWebSocket = (server) => {
   });
 
   io.on("connection", (socket) => {
-    const { userId, machineId, role } = socket.handshake.query;
+    console.log("✅ Socket connected:", socket.id);
 
-    if (role === "client") {
-      console.log(`📱 Client connected: ${userId}`);
-      socket.on("startSession", ({ machineId }) => {
-        const sessionId = `${userId}-${Date.now()}`;
-        activeSessions.set(sessionId, {
-          userId,
-          machineId,
-          clientSocketId: socket.id,
-          machineSocketId: null,
+    socket.on("machine_connected", (qrId) => {
+      machineSockets.set(qrId, socket.id);
+      console.log(`🤖 Machine ${qrId} connected`);
+    });
+
+    socket.on("user_connected", (userId) => {
+      userSockets.set(userId, socket.id);
+      console.log(`📱 User ${userId} connected`);
+    });
+
+    socket.on("bottle_inserted", ({ sessionId }) => {
+      const session = activeSessions.get(sessionId);
+      if (!session) return;
+
+      session.bottleCount -= 1;
+
+      const userSocketId = userSockets.get(session.userId);
+      if (userSocketId) {
+        io.to(userSocketId).emit("bottle_inserted", {
+          remaining: session.bottleCount,
         });
-
-        socket.join(sessionId);
-        socket.emit("sessionStarted", { sessionId });
-      });
-    }
-
-    if (role === "machine") {
-      console.log(`🤖 Machine connected: ${machineId}`);
-      for (const [sessionId, session] of activeSessions.entries()) {
-        if (session.machineId === machineId) {
-          session.machineSocketId = socket.id;
-          socket.join(sessionId);
-          io.to(sessionId).emit("machineReady");
-        }
       }
-    }
 
-    socket.on("scanBottle", ({ sessionId, barcode }) => {
-      // simulate bottle info
-      const bottleInfo = {
-        barcode,
-        type: "PET",
-        price: 0.30,
-      };
-      io.to(sessionId).emit("bottleScanned", bottleInfo);
+      if (session.bottleCount <= 0) {
+        const machineSocketId = machineSockets.get(session.machineId);
+        if (machineSocketId) {
+          io.to(machineSocketId).emit("session_closed");
+        }
+        if (userSocketId) {
+          io.to(userSocketId).emit("session_closed");
+        }
+
+        activeSessions.delete(sessionId);
+      }
     });
 
     socket.on("disconnect", () => {
-      console.log(`❌ Disconnected: ${socket.id}`);
+      for (const [qr, id] of machineSockets.entries()) {
+        if (id === socket.id) machineSockets.delete(qr);
+      }
+      for (const [uid, id] of userSockets.entries()) {
+        if (id === socket.id) userSockets.delete(uid);
+      }
     });
   });
-
-  return io;
 };
 
-module.exports = { initWebSocket };
+module.exports = {
+  initWebSocket,
+  getIO: () => io,
+  getMachineSockets: () => machineSockets,
+  getUserSockets: () => userSockets,
+  getActiveSessions: () => activeSessions,
+};

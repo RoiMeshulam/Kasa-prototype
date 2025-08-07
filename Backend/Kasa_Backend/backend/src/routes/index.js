@@ -1,5 +1,5 @@
 const express = require('express');
-const scansRoutes = require('./scansRoutes');
+const sessionsRoutes = require('./sessionsRoutes');
 const userRoutes = require("./userRoutes");
 const machinesRoutes = require("./machinesRoutes");
 const bottlesRoutes = require("./bottlesRoutes");
@@ -7,7 +7,7 @@ const bottlesRoutes = require("./bottlesRoutes");
 const router = express.Router();
 
 // all routes
-// router.use('/scans', scansRoutes);
+router.use('/sessions', sessionsRoutes);
 router.use("/users",userRoutes);
 router.use("/machines",machinesRoutes);
 router.use("/bottles",bottlesRoutes);
