@@ -1,7 +1,7 @@
 const { auth, rtdb, admin } = require("../firebase");
 
 const signIn = async (req, res) => {
-  const { token, fcmToken } = req.body;
+  const { token } = req.body;
 
   if (!token) {
     return res.status(400).json({ error: "Missing authentication token" });
@@ -23,20 +23,15 @@ const signIn = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // 🔹 Update FCM token only if provided
-    if (fcmToken) {
-      await rtdb.ref(`users/${uid}`).update({ fcmToken });
-      console.log(`📲 Updated FCM token for ${uid}: ${fcmToken}`);
-    } else {
-      console.log(`⚠️ No FCM token provided for ${uid}`);
-    }
 
     // 🔹 Return user data
     return res.status(200).json({
       uid,
-      role: userData.role,
+      email: userData.email,
       name: userData.name,
-      fcmToken: fcmToken || userData.fcmToken || null, // Return existing or new token
+      phoneNumber: userData.phoneNumber,
+      balance:userData.balance
+      // fcmToken: fcmToken || userData.fcmToken || null, // Return existing or new token
     });
 
   } catch (error) {
@@ -48,7 +43,8 @@ const signIn = async (req, res) => {
 
 // Register a new user
 const signUp = async (req, res) => {
-  const { email, password, name, role } = req.body;
+  console.log("signUp func")
+  const { email, password, name, phoneNumber } = req.body;
 
   try {
     // Create a new user in Firebase Authentication
@@ -57,47 +53,53 @@ const signUp = async (req, res) => {
       password,
     });
 
+    const balance = 0;
+
     // Save additional details in Firebase Realtime Database
     await rtdb.ref(`users/${userRecord.uid}`).set({
       name,
-      role,
+      phoneNumber,
+      email,
+      balance,
     });
 
     res.status(201).json({
       message: "User registered successfully",
       uid: userRecord.uid,
       name,
-      role,
+      email,
+      phoneNumber,
+      balance,
     });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 };
 
-// Get all users from Firebase Realtime Database
-const getUsers = async (req, res) => {
-  try {
-    // Fetch all users from the "users" node
-    const snapshot = await rtdb.ref("users").once("value");
-    const users = snapshot.val();
+// // Get all users from Firebase Realtime Database
+// const getUsers = async (req, res) => {
+//   try {
+//     // Fetch all users from the "users" node
+//     const snapshot = await rtdb.ref("users").once("value");
+//     const users = snapshot.val();
 
-    if (!users) {
-      return res.status(404).json({ message: "No users found" });
-    }
+//     if (!users) {
+//       return res.status(404).json({ message: "No users found" });
+//     }
 
-    // Convert object to an array with user UID included
-    const usersList = Object.keys(users).map(uid => ({
-      uid,
-      ...users[uid],
-    }));
+//     // Convert object to an array with user UID included
+//     const usersList = Object.keys(users).map(uid => ({
+//       uid,
+//       ...users[uid],
+//     }));
 
-    res.status(200).json(usersList);
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-};
+//     res.status(200).json(usersList);
+//   } catch (error) {
+//     console.error("Error fetching users:", error);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+// };
 
-module.exports = { signIn, signUp, getUsers };
+module.exports = { signIn, signUp };
 
 

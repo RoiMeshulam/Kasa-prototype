@@ -6,6 +6,6 @@ const router = express.Router();
 
 router.post("/signup", signUp); // User Registration
 router.post("/signin", signIn); // User Login
-router.get("/users",authenticateToken, getUsers); // Get all users from Firebase Realtime Database
+// router.get("/users",authenticateToken, getUsers); // Get all users from Firebase Realtime Database 
 
 module.exports = router;

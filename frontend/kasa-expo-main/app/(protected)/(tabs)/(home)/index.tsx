@@ -58,7 +58,7 @@ export default function HomeScreen() {
           </Link>
         </View>
       </View>
-      <View className=" border-green-800 border-t-2 h-[50%] mt-auto">
+      {/* <View className=" border-green-800 border-t-2 h-[50%] mt-auto">
         <MapView
           style={{ width: "100%", height: "100%" }}
           initialRegion={{
@@ -94,7 +94,7 @@ export default function HomeScreen() {
             />
           ))}
         </MapView>
-      </View>
+      </View> */}
     </SafeAreaView>
   );
 }

@@ -1,5 +1,6 @@
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { AuthProvider } from "@/store/authContext";
+import { GlobalProvider } from "@/store/globalContext";
 import {
   DarkTheme,
   DefaultTheme,
@@ -25,23 +26,25 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <AuthProvider>
-        <Stack>
-          <Stack.Screen
-            name="(protected)"
-            options={{ headerShown: false, animation: "none" }}
-          />
-          <Stack.Screen
-            name="(auth)/login"
-            options={{ animation: "none", headerShown: false }}
-          />
-          <Stack.Screen
-            name="(auth)/signup"
-            options={{ animation: "none", headerShown: false }}
-          />
-        </Stack>
-        <StatusBar style="auto" />
-      </AuthProvider>
+      <GlobalProvider>
+        <AuthProvider>
+          <Stack>
+            <Stack.Screen
+              name="(protected)"
+              options={{ headerShown: false, animation: "none" }}
+            />
+            <Stack.Screen
+              name="(auth)/login"
+              options={{ animation: "none", headerShown: false }}
+            />
+            <Stack.Screen
+              name="(auth)/signup"
+              options={{ animation: "none", headerShown: false }}
+            />
+          </Stack>
+          <StatusBar style="auto" />
+        </AuthProvider>
+      </GlobalProvider>
     </ThemeProvider>
   );
 }

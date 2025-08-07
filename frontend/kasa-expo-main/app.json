@@ -9,7 +9,11 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "האפליקציה צריכה גישה למצלמה כדי לסרוק ברקודים",
+        "NSMicrophoneUsageDescription": "האפליקציה צריכה גישה למיקרופון עבור שימוש עתידי"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -51,13 +55,22 @@
           "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
         }
       ],
-      ["expo-localization",
-    {
+      [
+        "expo-localization",
+        {
           "supportedLocales": {
-            "ios": ["en", "he"],
-            "android": ["en", "he"]
+            "ios": [
+              "en",
+              "he"
+            ],
+            "android": [
+              "en",
+              "he"
+            ]
           }
-        }]
+        }
+      ]
+    
     ],
     "experiments": {
       "typedRoutes": true
