@@ -12,9 +12,9 @@ import {
 import CustomAlert from "@/components/ui/CustomAlert";
 import axios from "axios";
 
-const SOCKET_SERVER_URL =
+const SOCKET_SERVER_URL = "http://10.0.0.9:8080"
   // Platform.OS === "android" ? "http://10.0.2.2:8080" : "http://localhost:8080";
-  Platform.OS === "android" ? "http://10.0.0.9:8080" : "http://localhost:8080"; // for emulator expo
+  // Platform.OS === "android" ? "http://10.0.0.9:8080" : "http://localhost:8080"; // for emulator expo
 
 const SignUpScreen = () => {
   const [alertVisible, setAlertVisible] = useState(false);

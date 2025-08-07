@@ -15,10 +15,10 @@ interface UserInfo {
 }
 
 // 📌 כתובת השרת לפי הפלטפורמה (ל־Emulator)
-const SOCKET_SERVER_URL =
+const SOCKET_SERVER_URL ="http://10.0.0.9:8080"
   Platform.OS === "android"
-    ? "http://10.0.0.9:8080"
-    : "http://localhost:8080";
+    // ? "http://10.0.0.9:8080"
+    // : "http://localhost:8080";
 
 // 📌 הפונקציה הראשית
 export const signInWithEmail = async (
@@ -74,7 +74,7 @@ export const signInWithEmail = async (
       // 🎯 עדכון סטייט
       setUserInfo(userInfo);
       setIsConnected(true);
-
+      
       showCustomAlert("הצלחה", `ברוך הבא ${name || email}!`, "success");
       router.replace("/(protected)/(tabs)/(home)");
     } catch (error: any) {
