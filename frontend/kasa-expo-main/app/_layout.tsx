@@ -37,10 +37,6 @@ export default function RootLayout() {
               name="(auth)/login"
               options={{ animation: "none", headerShown: false }}
             />
-            <Stack.Screen
-              name="(auth)/signup"
-              options={{ animation: "none", headerShown: false }}
-            />
           </Stack>
           <StatusBar style="auto" />
         </AuthProvider>

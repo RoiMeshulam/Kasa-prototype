@@ -4,7 +4,17 @@ const HomeLayout = () => {
   return (
     <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen name="scanner" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="scanner"
+        options={{
+          headerStyle: {
+            backgroundColor: "#32a852",
+          },
+          headerTintColor: "#fff",
+          title: "Scanner",
+          headerBackTitle: "Back",
+        }}
+      />
     </Stack>
   );
 };

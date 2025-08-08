@@ -17,7 +17,7 @@ const WalletDetailScreen = () => {
 
   return (
     <SafeAreaView>
-      <Link href=".." asChild>
+      <Link href=".." dismissTo asChild>
         <Pressable className="m-3">
           <Ionicons name="close-circle" size={48} />
         </Pressable>

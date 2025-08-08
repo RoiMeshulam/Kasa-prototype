@@ -9,6 +9,17 @@ const WalletLayout = () => {
         name="[walletItem]"
         options={{ headerShown: false, animation: "slide_from_bottom" }}
       />
+      <Stack.Screen
+        name="fullList"
+        options={{
+          headerStyle: {
+            backgroundColor: "#32a852",
+          },
+          headerTintColor: "#fff",
+          title: "Edit Profile",
+          headerBackTitle: 'Back'
+        }}
+      />
     </Stack>
   );
 };

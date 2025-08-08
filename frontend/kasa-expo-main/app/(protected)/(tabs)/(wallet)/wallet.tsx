@@ -4,35 +4,43 @@ import {
   Pressable,
   SafeAreaView,
   Text,
-  TextInput,
   View,
 } from "react-native";
-import { transactions } from "../../../../utils/DUMMY_DATA";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { Header } from "@/components/header";
 import { useState } from "react";
 import { AntDesign } from "@expo/vector-icons";
+import { InputField } from "@/components/ui/InputField";
+import { useGlobalContext } from "@/store/globalContext";
+import { transactions } from "@/utils/DUMMY_DATA";
 
 export default function WalletScreen() {
   const [value, setValue] = useState("");
+  const router = useRouter();
+  const { userInfo } = useGlobalContext();
 
   return (
     <SafeAreaView>
       <Header />
       <View className="flex items-center gap-3 mb-12">
         <Text className="font-thin">Balance</Text>
-        <Text className="text-6xl font-bold">138.30</Text>
+        <View className="flex-row items-end">
+          <Text className="text-xs">$</Text>
+          <Text className="text-6xl font-bold">
+            {Number(userInfo?.balance).toFixed(2)}
+          </Text>
+        </View>
       </View>
       <View className="mx-4">
         <FlatList
           ListHeaderComponent={
-            <TextInput
-              className="w-full p-4 rounded-lg bg-white text-black"
+            <InputField
               autoCapitalize="none"
               value={value}
               placeholder="Search"
               placeholderTextColor="#9CA3AF"
               onChangeText={setValue}
+              icon={<AntDesign name="search1" size={24} />}
             />
           }
           ListHeaderComponentStyle={{
@@ -63,7 +71,6 @@ export default function WalletScreen() {
                 <View
                   className={`w-8 h-8 flex items-center justify-center rounded-full ${item.status === "הצלחה" ? "bg-green-500" : "bg-red-500"}`}
                 >
-                  {/* <Text className="text-white">X</Text> */}
                   <AntDesign
                     name={item.status === "הצלחה" ? "check" : "close"}
                     color={"#fff"}
@@ -72,12 +79,21 @@ export default function WalletScreen() {
               </Pressable>
             </Link>
           )}
+          ListEmptyComponent={() => {
+            return (
+              <View className="h-full flex justify-center items-center">
+                <Text className="text-lg">No items found</Text>
+              </View>
+            );
+          }}
           ListFooterComponent={
             <Button
               title="Show more"
               color={"green"}
               onPress={() => {
-                console.log("Show more Screen");
+                router.push({
+                  pathname: "/(protected)/(tabs)/(wallet)/fullList",
+                });
               }}
             />
           }

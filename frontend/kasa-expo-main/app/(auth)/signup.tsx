@@ -8,16 +8,19 @@ import {
   View,
   Alert,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import CustomAlert from "@/components/ui/CustomAlert";
 import axios from "axios";
+import { InputField } from "@/components/ui/InputField";
 
-const SOCKET_SERVER_URL = "http://10.0.0.9:8080"
-  // Platform.OS === "android" ? "http://10.0.2.2:8080" : "http://localhost:8080";
-  // Platform.OS === "android" ? "http://10.0.0.9:8080" : "http://localhost:8080"; // for emulator expo
+const SOCKET_SERVER_URL = "http://10.0.0.9:8080";
+// Platform.OS === "android" ? "http://10.0.2.2:8080" : "http://localhost:8080";
+// Platform.OS === "android" ? "http://10.0.0.9:8080" : "http://localhost:8080"; // for emulator expo
 
 const SignUpScreen = () => {
   const [alertVisible, setAlertVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [alertData, setAlertData] = useState<{
     title: string;
     message: string;
@@ -56,6 +59,7 @@ const SignUpScreen = () => {
   };
 
   const handleNewUserClick = async () => {
+    setLoading(true);
     const { name, email, password, confirmPassword, phoneNumber } = newUser;
 
     if (!name || !email || !password || !confirmPassword) {
@@ -75,16 +79,18 @@ const SignUpScreen = () => {
         password,
         phoneNumber,
       });
-      console.log("good")
+      console.log("good");
 
       showCustomAlert("הצלחה", "נרשמת בהצלחה!", "success");
       resetForm();
+      setLoading(false);
     } catch (error: any) {
-      console.log("bad")
+      console.log("bad");
       console.error("Registration error:", error);
       const msg =
         error?.response?.data?.message || "שגיאה בעת ניסיון הרשמה. נסה שוב";
       showCustomAlert("שגיאה", msg, "error");
+      setLoading(false);
     }
   };
 
@@ -115,87 +121,73 @@ const SignUpScreen = () => {
         </Text>
 
         <View className="gap-4">
-          <View>
-            <Text className="text-sm font-medium text-gray-300 mb-1">Name</Text>
-            <TextInput
-              className="w-full p-4 border border-green-200 rounded-lg bg-white text-black"
-              value={newUser.name}
-              placeholder="Enter name"
-              placeholderTextColor="#9CA3AF"
-              onChangeText={(text) =>
-                setNewUser((prev) => ({ ...prev, name: text }))
-              }
-            />
-          </View>
+          <InputField
+            text="Name"
+            value={newUser.name}
+            placeholder="Enter your name"
+            onChangeText={(text: any) =>
+              setNewUser((prev) => ({ ...prev, name: text }))
+            }
+            editable={!loading}
+          />
 
-          <View>
-            <Text className="text-sm font-medium text-gray-300 mb-1">
-              Phone Number
-            </Text>
-            <TextInput
-              className="w-full p-4 border border-green-200 rounded-lg bg-white text-black"
-              value={newUser.phoneNumber}
-              placeholder="Enter phone number"
-              placeholderTextColor="#9CA3AF"
-              keyboardType="phone-pad"
-              onChangeText={(text) =>
-                setNewUser((prev) => ({ ...prev, phoneNumber: text }))
-              }
-            />
-          </View>
+          <InputField
+            text="Phone Number"
+            value={newUser.phoneNumber}
+            placeholder="Enter phone number"
+            keyboardType="phone-pad"
+            onChangeText={(text) =>
+              setNewUser((prev) => ({ ...prev, phoneNumber: text }))
+            }
+            editable={!loading}
+          />
 
-          <View>
-            <Text className="text-sm font-medium text-gray-300 mb-1">Email</Text>
-            <TextInput
-              className="w-full p-4 border border-green-200 rounded-lg bg-white text-black"
-              value={newUser.email}
-              placeholder="Enter email"
-              placeholderTextColor="#9CA3AF"
-              autoCapitalize="none"
-              keyboardType="email-address"
-              onChangeText={(text) =>
-                setNewUser((prev) => ({ ...prev, email: text }))
-              }
-            />
-          </View>
+          <InputField
+            text="Email"
+            value={newUser.email}
+            placeholder="Enter email"
+            autoCapitalize="none"
+            keyboardType="email-address"
+            onChangeText={(text) =>
+              setNewUser((prev) => ({ ...prev, email: text }))
+            }
+            editable={!loading}
+          />
 
-          <View>
-            <Text className="text-sm font-medium text-gray-300 mb-1">
-              Password
-            </Text>
-            <TextInput
-              className="w-full p-4 border border-green-200 rounded-lg bg-white text-black"
-              value={newUser.password}
-              placeholder="Enter password"
-              placeholderTextColor="#9CA3AF"
-              secureTextEntry
-              onChangeText={(text) =>
-                setNewUser((prev) => ({ ...prev, password: text }))
-              }
-            />
-          </View>
+          <InputField
+            text="Password"
+            value={newUser.password}
+            placeholder="Enter password"
+            secureTextEntry
+            onChangeText={(text) =>
+              setNewUser((prev) => ({ ...prev, password: text }))
+            }
+            editable={!loading}
+          />
 
-          <View>
-            <Text className="text-sm font-medium text-gray-300 mb-1">
-              Confirm Password
-            </Text>
-            <TextInput
-              className="w-full p-4 border border-green-200 rounded-lg bg-white text-black"
-              value={newUser.confirmPassword}
-              placeholder="Confirm password"
-              placeholderTextColor="#9CA3AF"
-              secureTextEntry
-              onChangeText={(text) =>
-                setNewUser((prev) => ({ ...prev, confirmPassword: text }))
-              }
-            />
-          </View>
+          <InputField
+            text="Confirm Password"
+            value={newUser.confirmPassword}
+            placeholder="Confirm password"
+            secureTextEntry
+            onChangeText={(text) =>
+              setNewUser((prev) => ({ ...prev, confirmPassword: text }))
+            }
+            editable={!loading}
+          />
 
           <TouchableOpacity
             className="w-full bg-green-600 p-4 rounded-lg mt-6"
             onPress={handleNewUserClick}
+            disabled={loading}
           >
-            <Text className="text-white text-center font-semibold">Sign Up</Text>
+            {loading ? (
+              <ActivityIndicator size={"small"} color={"#fff"} />
+            ) : (
+              <Text className="text-white text-center font-semibold">
+                Sign Up
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
 
