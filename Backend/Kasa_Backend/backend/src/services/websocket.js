@@ -1,147 +1,187 @@
+// backend/src/services/websocket.js
 const { Server } = require('socket.io');
+const { persistAndCloseSession } = require('./sessionStore.service');
+
+// ✅ לייבא את המפות מהסינגלטון
+const {
+  machineSockets,
+  userSockets,
+  activeSessions,
+  lastScanTs,
+} = require('./sessionMemory');
 
 let io;
-const machineSockets = new Map();    // qrId → socketId
-const userSockets = new Map();       // userId → socketId
-const activeSessions = new Map();    // sessionId → { machineId, userId, bottleCount }
+
+const API_BASE = process.env.INTERNAL_API_BASE || 'http://localhost:8080';
+const SCAN_COOLDOWN_MS = 1200;
+
+function toBottleArray(session) {
+  return Array.from(session.bottles.values());
+}
 
 const initWebSocket = (server) => {
   io = new Server(server, {
-    cors: {
-      origin: '*',
-      methods: ['GET', 'POST'],
-    },
+    cors: { origin: '*', methods: ['GET', 'POST'] },
   });
 
   io.on('connection', (socket) => {
     console.log('✅ Socket connected:', socket.id);
 
-    // 🤖 מכונה מתחברת
     socket.on('machine_connected', (qrId) => {
       machineSockets.set(qrId, socket.id);
       console.log(`🤖 Machine ${qrId} connected`);
     });
 
-    // 📱 משתמש מתחבר
     socket.on('user_connected', (userId) => {
       userSockets.set(userId, socket.id);
       console.log(`📱 User ${userId} connected`);
     });
 
-    // 🧾 התחלת סשן - נקרא מה-API
-    socket.on('start_session', ({ sessionId, machineId, userId, bottleCount }) => {
-      // אם כבר יש סשן - לא ניצור שוב
+    socket.on('start_session', ({ sessionId, machineId, userId }) => {
       if (activeSessions.has(sessionId)) {
         console.warn(`⚠️ Session ${sessionId} already exists`);
         return;
       }
+      activeSessions.set(sessionId, {
+        machineId,
+        userId,
+        bottles: new Map(),
+        balance: 0,
+        currentBottleId: null,
+        createdAt: Date.now(), // נחמד שיהיה
+      });
 
-      activeSessions.set(sessionId, { machineId, userId, bottleCount });
+      const uSock = userSockets.get(userId);
+      const mSock = machineSockets.get(machineId);
+      if (uSock) io.to(uSock).emit('session_started', { sessionId, machineId });
+      if (mSock) io.to(mSock).emit('session_started', { sessionId, userId });
 
-      const userSocketId = userSockets.get(userId);
-      const machineSocketId = machineSockets.get(machineId);
-
-      if (userSocketId) {
-        io.to(userSocketId).emit('session_started', { sessionId, machineId });
-      }
-
-      if (machineSocketId) {
-        io.to(machineSocketId).emit('session_started', { sessionId, userId });
-      }
-
-      console.log(`🤝 Session started:`, { sessionId, userId, machineId });
+      console.log('🤝 Session started:', { sessionId, userId, machineId });
     });
 
     socket.on('bottle_scanned', async ({ sessionId, barcode }) => {
       const session = activeSessions.get(sessionId);
-      if (!session) {
-        console.warn(`❌ No session found for: ${sessionId}`);
-        return;
-      }
-    
+      if (!session) return;
+
+      if (!session.bottles || !(session.bottles instanceof Map)) session.bottles = new Map();
+      if (typeof session.balance !== 'number') session.balance = 0;
+
+      const now = Date.now();
+      const last = lastScanTs.get(sessionId) || 0;
+      if (now - last < SCAN_COOLDOWN_MS) return;
+      lastScanTs.set(sessionId, now);
+
       console.log(`📤 Bottle scanned on session ${sessionId} with barcode ${barcode}`);
-    
+
       try {
-        // קריאה לשרת שלך כדי להביא פרטים על הבקבוק
-        const response = await fetch(`http://localhost:8080/api/bottles/${barcode}`, {
+        const resp = await fetch(`${API_BASE}/api/bottles/${encodeURIComponent(String(barcode))}`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
-       
         });
-    
-        const bottleData = await response.json();
-    
-        // שליחת פרטי בקבוק ללקוח
-        const userSocketId = userSockets.get(session.userId);
-        if (userSocketId) {
-          io.to(userSocketId).emit('bottle_data', {
-            bottle: bottleData,
-            remaining: session.bottleCount,
+        if (!resp.ok) return;
+
+        const bottleData = await resp.json();
+        const normalized = {
+          id: bottleData.id || String(barcode),
+          name: bottleData.name ?? 'לא ידוע',
+          price: Number(bottleData.price ?? 0),
+        };
+
+        session.currentBottleId = normalized.id;
+
+        if (!session.bottles.has(normalized.id)) {
+          session.bottles.set(normalized.id, {
+            id: normalized.id,
+            name: normalized.name,
+            price: normalized.price,
+            quantity: 0,
           });
         }
-    
-        // שליחת פרטי בקבוק גם למכונה אם צריך
-        const machineSocketId = machineSockets.get(session.machineId);
-        if (machineSocketId) {
-          io.to(machineSocketId).emit('bottle_data', {
-            bottle: bottleData,
-            remaining: session.bottleCount,
-          });
-        }
-    
-        console.log(`📬 Bottle data sent to both user and machine`);
+
+        const uSock = userSockets.get(session.userId);
+        const mSock = machineSockets.get(session.machineId);
+        const payload = { bottle: normalized };
+
+        if (uSock) io.to(uSock).emit('bottle_data', payload);
+        if (mSock) io.to(mSock).emit('bottle_data', payload);
+
+        console.log(`📬 Bottle ready -> ${normalized.name} (${normalized.id})`);
       } catch (err) {
         console.error('❌ Failed to fetch bottle data:', err);
       }
     });
 
-
-
-    // 🍾 בקבוק נכנס למכונה
     socket.on('bottle_inserted', ({ sessionId }) => {
       const session = activeSessions.get(sessionId);
-      if (!session) {
-        console.warn(`❌ No session found for: ${sessionId}`);
-        return;
-      }
+      if (!session || !session.currentBottleId) return;
 
-      session.bottleCount -= 1;
-      console.log(`➖ Bottle inserted. Remaining: ${session.bottleCount}`);
+      const item = session.bottles.get(session.currentBottleId);
+      if (!item) return;
 
-      const userSocketId = userSockets.get(session.userId);
-      if (userSocketId) {
-        io.to(userSocketId).emit('bottle_data', {
-          remaining: session.bottleCount,
-        });
-      }
+      item.quantity += 1;
+      session.balance += Number(item.price || 0);
+      session.bottles.set(item.id, item);
 
-      // אם נגמרו בקבוקים - סגור סשן
-      if (session.bottleCount <= 0) {
-        const machineSocketId = machineSockets.get(session.machineId);
-        if (machineSocketId) {
-          io.to(machineSocketId).emit('session_closed');
-        }
-        if (userSocketId) {
-          io.to(userSocketId).emit('session_closed');
-        }
+      const uSock = userSockets.get(session.userId);
+      const mSock = machineSockets.get(session.machineId);
+      const payload = { bottle: item, bottles: toBottleArray(session), balance: session.balance };
 
-        activeSessions.delete(sessionId);
-        console.log(`🛑 Session ${sessionId} closed`);
+      if (uSock) io.to(uSock).emit('bottle_progress', payload);
+      if (mSock) io.to(mSock).emit('bottle_progress', payload);
+
+      console.log(`➕ Inserted 1: ${item.name} (x${item.quantity}) | balance=₪${session.balance.toFixed(2)}`);
+    });
+
+    socket.on('end_session', async ({ sessionId }) => {
+      try {
+        const payload = await persistAndCloseSession(sessionId);
+        const uSock = userSockets.get(payload.userId);
+        const mSock = machineSockets.get(payload.machineId);
+        if (uSock) io.to(uSock).emit('session_closed');
+        if (mSock) io.to(mSock).emit('session_closed');
+        console.log(`🛑 Session ${sessionId} closed & persisted (₪${payload.balance})`);
+      } catch (err) {
+        console.error('end_session persist failed:', err);
       }
     });
 
-    // ❌ ניתוק סוקט
+    socket.on('await_bottle', ({ sessionId }) => {
+      const session = activeSessions.get(sessionId);
+      if (!session) return;
+      const machineSocketId = machineSockets.get(session.machineId);
+      if (machineSocketId) io.to(machineSocketId).emit('await_bottle');
+    });
+
     socket.on('disconnect', () => {
+      let disconnectedMachineId = null;
       for (const [qrId, id] of machineSockets.entries()) {
         if (id === socket.id) {
           machineSockets.delete(qrId);
+          disconnectedMachineId = qrId;
           console.log(`🔌 Machine ${qrId} disconnected`);
+          break;
         }
       }
+
+      let disconnectedUserId = null;
       for (const [userId, id] of userSockets.entries()) {
         if (id === socket.id) {
           userSockets.delete(userId);
+          disconnectedUserId = userId;
           console.log(`🔌 User ${userId} disconnected`);
+          break;
+        }
+      }
+
+      for (const [sid, session] of activeSessions.entries()) {
+        if (session.machineId === disconnectedMachineId || session.userId === disconnectedUserId) {
+          const uSock = userSockets.get(session.userId);
+          const mSock = machineSockets.get(session.machineId);
+          if (uSock) io.to(uSock).emit('session_closed');
+          if (mSock) io.to(mSock).emit('session_closed');
+          activeSessions.delete(sid);
+          lastScanTs.delete(sid);
+          console.log(`🛑 Session ${sid} closed due to disconnect`);
         }
       }
     });
