@@ -28,9 +28,9 @@ export default function HomeScreen() {
     getCurrentLocation();
   }, []);
 
-  if (!location) {
-    return <View />;
-  }
+  // if (!location) {
+  //   return <View />;
+  // }
 
   return (
     <SafeAreaView className="flex-1 bg-gray-200">
