@@ -5,7 +5,7 @@ const HomeLayout = () => {
     <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen
-        name="scanner"
+        name="scannerScreen"
         options={{
           headerStyle: {
             backgroundColor: "#32a852",

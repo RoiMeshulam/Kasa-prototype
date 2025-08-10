@@ -43,8 +43,8 @@ export default function HomeScreen() {
             </View>
           </View>
           <Link
-            href={"/(protected)/(tabs)/(home)/scanner"}
-            className="bg-green-500 rounded-md py-8 items-center justify-center"
+            href={"/(protected)/(tabs)/(home)/scannerScreen"}
+            className="bg-green-500 rounded-md py-3 text-center "
             asChild
           >
             <Pressable className="flex-row gap-x-2">
