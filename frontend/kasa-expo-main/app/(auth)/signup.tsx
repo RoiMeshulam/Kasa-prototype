@@ -13,6 +13,8 @@ import {
 import CustomAlert from "@/components/ui/CustomAlert";
 import axios from "axios";
 import { InputField } from "@/components/ui/InputField";
+import { useFormValidation } from "@/hooks/useFormValidation";
+import { formSchema, FormValues } from "@/utils/formSchema";
 
 const SOCKET_SERVER_URL = "http://10.0.0.9:8080";
 // Platform.OS === "android" ? "http://10.0.2.2:8080" : "http://localhost:8080";
@@ -21,6 +23,16 @@ const SOCKET_SERVER_URL = "http://10.0.0.9:8080";
 const SignUpScreen = () => {
   const [alertVisible, setAlertVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const { values, errors, handleChange, validate, resetForm } =
+    useFormValidation<FormValues>(formSchema, {
+      name: "",
+      phone: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    });
+
   const [alertData, setAlertData] = useState<{
     title: string;
     message: string;
@@ -29,14 +41,6 @@ const SignUpScreen = () => {
     title: "",
     message: "",
     type: undefined,
-  });
-
-  const [newUser, setNewUser] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    phoneNumber: "",
   });
 
   const showCustomAlert = (
@@ -48,41 +52,22 @@ const SignUpScreen = () => {
     setAlertVisible(true);
   };
 
-  const resetForm = () => {
-    setNewUser({
-      name: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-      phoneNumber: "",
-    });
-  };
-
   const handleNewUserClick = async () => {
-    setLoading(true);
-    const { name, email, password, confirmPassword, phoneNumber } = newUser;
-
-    if (!name || !email || !password || !confirmPassword) {
-      showCustomAlert("שגיאה", "אנא מלא את כל השדות הנדרשים", "error");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      showCustomAlert("שגיאה", "הסיסמאות לא תואמות", "error");
-      return;
-    }
-
     try {
-      await axios.post(`${SOCKET_SERVER_URL}/api/users/signup`, {
-        name,
-        email,
-        password,
-        phoneNumber,
-      });
-      console.log("good");
+      setLoading(true);
+      const isValid = await validate();
 
-      showCustomAlert("הצלחה", "נרשמת בהצלחה!", "success");
-      resetForm();
+      if (isValid) {
+        await axios.post(`${SOCKET_SERVER_URL}/api/users/signup`, {
+          name: values.name,
+          email: values.email,
+          password: values.password,
+          phoneNumber: values.phone,
+        });
+        console.log("good");
+
+        showCustomAlert("הצלחה", "נרשמת בהצלחה!", "success");
+      }
       setLoading(false);
     } catch (error: any) {
       console.log("bad");
@@ -90,6 +75,7 @@ const SignUpScreen = () => {
       const msg =
         error?.response?.data?.message || "שגיאה בעת ניסיון הרשמה. נסה שוב";
       showCustomAlert("שגיאה", msg, "error");
+      resetForm();
       setLoading(false);
     }
   };
@@ -123,57 +109,52 @@ const SignUpScreen = () => {
         <View className="gap-4">
           <InputField
             text="Name"
-            value={newUser.name}
+            value={values.name}
             placeholder="Enter your name"
-            onChangeText={(text: any) =>
-              setNewUser((prev) => ({ ...prev, name: text }))
-            }
+            onChangeText={(v) => handleChange("name", v)}
             editable={!loading}
+            validation={errors.name}
           />
 
           <InputField
             text="Phone Number"
-            value={newUser.phoneNumber}
+            value={values.phone}
             placeholder="Enter phone number"
             keyboardType="phone-pad"
-            onChangeText={(text) =>
-              setNewUser((prev) => ({ ...prev, phoneNumber: text }))
-            }
+            onChangeText={(v) => handleChange("phone", v)}
             editable={!loading}
+            validation={errors.phone}
           />
 
           <InputField
             text="Email"
-            value={newUser.email}
+            value={values.email}
             placeholder="Enter email"
             autoCapitalize="none"
             keyboardType="email-address"
-            onChangeText={(text) =>
-              setNewUser((prev) => ({ ...prev, email: text }))
-            }
+            onChangeText={(v) => handleChange("email", v)}
             editable={!loading}
+            validation={errors.email}
           />
 
           <InputField
             text="Password"
-            value={newUser.password}
+            value={values.password}
             placeholder="Enter password"
             secureTextEntry
-            onChangeText={(text) =>
-              setNewUser((prev) => ({ ...prev, password: text }))
-            }
+            onChangeText={(v) => handleChange("password", v)}
             editable={!loading}
+            validation={errors.password}
           />
 
           <InputField
             text="Confirm Password"
-            value={newUser.confirmPassword}
+            value={values.confirmPassword}
             placeholder="Confirm password"
             secureTextEntry
-            onChangeText={(text) =>
-              setNewUser((prev) => ({ ...prev, confirmPassword: text }))
-            }
+            onChangeText={(v) => handleChange("confirmPassword", v)}
             editable={!loading}
+            validation={errors.confirmPassword}
           />
 
           <TouchableOpacity

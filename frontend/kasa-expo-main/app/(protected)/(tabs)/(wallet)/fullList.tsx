@@ -1,5 +1,5 @@
 import { View, Text, Pressable, FlatList } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "expo-router";
 import { AntDesign } from "@expo/vector-icons";
 import { InputField } from "@/components/ui/InputField";
@@ -7,6 +7,18 @@ import { transactions } from "@/utils/DUMMY_DATA";
 
 const FullListScreen = () => {
   const [value, setValue] = useState("");
+  const [filteredData, setFilteredData] = useState(transactions);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      const results = transactions.filter((item) =>
+        item.location_name.toLowerCase().includes(value.toLowerCase())
+      );
+      setFilteredData(results);
+    }, 300);
+
+    return () => clearTimeout(timeout);
+  }, [value]);
 
   return (
     <FlatList
@@ -25,7 +37,7 @@ const FullListScreen = () => {
         borderBottomWidth: 1,
       }}
       className="bg-white rounded-lg"
-      data={transactions}
+      data={filteredData}
       renderItem={({ item }: { item: any }) => (
         <Link
           href={{

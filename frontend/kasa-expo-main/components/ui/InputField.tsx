@@ -5,7 +5,7 @@ import { AntDesign } from "@expo/vector-icons";
 type InputFieldProps = TextInputProps & {
   text?: string;
   icon?: React.ReactNode;
-  validation?: { isValid: boolean; message: string };
+  validation?: string;
 };
 
 export const InputField = React.memo(
@@ -17,7 +17,9 @@ export const InputField = React.memo(
           <View className="mr-2">{icon}</View>
           <TextInput className="flex-grow" autoCapitalize="none" {...props} />
         </View>
-        {false && <Text className="text-xs text-red-500"></Text>}
+        {validation && (
+          <Text className="text-xs text-red-500">{validation}</Text>
+        )}
       </View>
     );
   }

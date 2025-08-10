@@ -19,6 +19,10 @@ export default function WalletScreen() {
   const router = useRouter();
   const { userInfo } = useGlobalContext();
 
+  const filteredData = transactions.filter((item) =>
+    item.location_name.toLowerCase().includes(value.toLowerCase())
+  );
+
   return (
     <SafeAreaView>
       <Header />
@@ -48,7 +52,7 @@ export default function WalletScreen() {
             borderBottomWidth: 1,
           }}
           className="bg-white rounded-lg"
-          data={transactions.slice(0, 5)}
+          data={filteredData.slice(0, 5)}
           renderItem={({ item }: { item: any }) => (
             <Link
               href={{

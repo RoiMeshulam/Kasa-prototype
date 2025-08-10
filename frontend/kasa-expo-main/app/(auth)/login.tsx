@@ -13,26 +13,19 @@ import { signInWithEmail } from "@/services/firebaseService";
 import CustomAlert from "@/components/ui/CustomAlert";
 import { InputField } from "@/components/ui/InputField";
 import { AntDesign } from "@expo/vector-icons";
+import { LoginFormValues, loginSchema } from "@/utils/loginSchema";
+import { useFormValidation } from "@/hooks/useFormValidation";
 
 const SignInScreen = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { setUserInfo, setIsConnected } = useGlobalContext();
 
-  const handleEmailChange = useCallback((value: string) => {
-    setEmail(value);
-  }, []);
-
-  const handlePasswordChange = useCallback((value: string) => {
-    setPassword(value);
-  }, []);
-
-  const emailIcon = useMemo(
-    () => <AntDesign name="user" color={"#32a852"} size={24} />,
-    []
-  );
+  const { values, errors, handleChange, validate, resetForm } =
+    useFormValidation<LoginFormValues>(loginSchema, {
+      email: "",
+      password: "",
+    });
 
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertData, setAlertData] = useState<{
@@ -57,18 +50,23 @@ const SignInScreen = () => {
   const handleLogin = async () => {
     try {
       setLoading(true);
-      console.log(" i am in handle login");
-      await signInWithEmail(
-        email,
-        password,
-        setUserInfo,
-        setIsConnected,
-        showCustomAlert,
-        router
-      );
+      const isValid = await validate();
+
+      if (isValid) {
+        console.log(" i am in handle login");
+        await signInWithEmail(
+          values.email,
+          values.password,
+          setUserInfo,
+          setIsConnected,
+          showCustomAlert,
+          router
+        );
+      }
       setLoading(false);
     } catch (error) {
       console.log(error);
+      resetForm();
       setLoading(false);
       return <View className="flex-1 justify-center items-center">Error</View>;
     }
@@ -101,22 +99,24 @@ const SignInScreen = () => {
 
         <InputField
           text="Email Address"
-          value={email}
+          value={values.email}
           placeholder="Enter email"
-          onChangeText={handleEmailChange}
-          icon={emailIcon}
+          onChangeText={(v) => handleChange("email", v)}
+          icon={<AntDesign name="user" color={"#32a852"} size={24} />}
           keyboardType="email-address"
           editable={!loading}
+          validation={errors.email}
         />
 
         <InputField
           text="Password"
-          value={password}
+          value={values.password}
           placeholder="Enter password"
           secureTextEntry
-          onChangeText={handlePasswordChange}
+          onChangeText={(v) => handleChange("password", v)}
           icon={<AntDesign name="lock" color={"#32a852"} size={24} />}
           editable={!loading}
+          validation={errors.password}
         />
 
         <TouchableOpacity
