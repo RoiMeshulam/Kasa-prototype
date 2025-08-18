@@ -6,9 +6,11 @@ import { Entypo } from "@expo/vector-icons";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { useColorScheme } from "@/hooks/useColorScheme.web";
 import { Colors } from "@/constants/Colors";
+import { useTranslation } from "react-i18next";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const { t } = useTranslation();
 
   return (
     <Tabs
@@ -29,7 +31,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="(home)"
         options={{
-          title: "Home",
+          title: t("Home"),
           tabBarIcon: ({ color }) => (
             <FontAwesome5 name="home" size={28} color={color} />
           ),
@@ -38,7 +40,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="(wallet)"
         options={{
-          title: "Wallet",
+          title: t("Wallet"),
           tabBarIcon: ({ color }) => (
             <Entypo size={28} name="wallet" color={color} />
           ),
@@ -47,7 +49,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="map"
         options={{
-          title: "Map",
+          title: t("Map"),
           tabBarIcon: ({ color }) => (
             <Entypo size={28} name="map" color={color} />
           ),
@@ -56,7 +58,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="(user)"
         options={{
-          title: "Profile",
+          title: t("Profile"),
           tabBarIcon: ({ color }) => (
             <Entypo size={28} name="user" color={color} />
           ),

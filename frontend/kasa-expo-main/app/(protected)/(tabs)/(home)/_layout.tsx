@@ -1,6 +1,9 @@
 import { Stack } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 const HomeLayout = () => {
+  const { t } = useTranslation();
+
   return (
     <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
@@ -11,8 +14,8 @@ const HomeLayout = () => {
             backgroundColor: "#32a852",
           },
           headerTintColor: "#fff",
-          title: "Scanner",
-          headerBackTitle: "Back",
+          title: t("Scanner"),
+          headerBackTitle: t("Back"),
         }}
       />
     </Stack>

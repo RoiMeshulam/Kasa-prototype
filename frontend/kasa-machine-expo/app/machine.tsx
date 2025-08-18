@@ -14,7 +14,7 @@ type ProgressPayload = {
   balance: number;
 };
 
-const SOCKET_SERVER_URL = "http://10.0.0.9:8080";
+const SOCKET_SERVER_URL = "http://10.0.0.8:8080";
 
 const MachineScreen = () => {
   const params = useLocalSearchParams();

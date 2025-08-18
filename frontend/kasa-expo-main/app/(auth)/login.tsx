@@ -15,11 +15,14 @@ import { InputField } from "@/components/ui/InputField";
 import { AntDesign } from "@expo/vector-icons";
 import { LoginFormValues, loginSchema } from "@/utils/loginSchema";
 import { useFormValidation } from "@/hooks/useFormValidation";
+import { useTranslation } from "react-i18next";
+import i18n from "@/localization/i18n";
 
 const SignInScreen = () => {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { setUserInfo, setIsConnected } = useGlobalContext();
+  const { t } = useTranslation();
 
   const { values, errors, handleChange, validate, resetForm } =
     useFormValidation<LoginFormValues>(loginSchema, {
@@ -54,6 +57,8 @@ const SignInScreen = () => {
 
       if (isValid) {
         console.log(" i am in handle login");
+        console.log(values);
+
         await signInWithEmail(
           values.email,
           values.password,
@@ -93,14 +98,16 @@ const SignInScreen = () => {
           </Text>
         </View>
 
-        <Text className="text-xl font-bold mb-4 text-black">
-          Login with your account
+        <Text
+          className={`text-xl font-bold mb-4 text-black ${i18n.language === "he" && "self-end"}`}
+        >
+          {t("Login with your account")}
         </Text>
 
         <InputField
-          text="Email Address"
+          text={t("Email Address")}
           value={values.email}
-          placeholder="Enter email"
+          placeholder={t("Enter your email")}
           onChangeText={(v) => handleChange("email", v)}
           icon={<AntDesign name="user" color={"#32a852"} size={24} />}
           keyboardType="email-address"
@@ -109,9 +116,9 @@ const SignInScreen = () => {
         />
 
         <InputField
-          text="Password"
+          text={t("Password")}
           value={values.password}
-          placeholder="Enter password"
+          placeholder={t("Enter password")}
           secureTextEntry
           onChangeText={(v) => handleChange("password", v)}
           icon={<AntDesign name="lock" color={"#32a852"} size={24} />}
@@ -128,15 +135,19 @@ const SignInScreen = () => {
             <ActivityIndicator size={"small"} color={"#fff"} />
           ) : (
             <Text className="text-white text-center font-semibold">
-              Sign In
+              {t("Sign In")}
             </Text>
           )}
         </TouchableOpacity>
 
-        <View className="flex-row justify-center items-center mt-6 gap-2">
-          <Text className="text-gray-600">Don't have an account?</Text>
+        <View
+          className={`${i18n.language === "he" ? "flex-row-reverse" : "flex-row"} justify-center items-center mt-6 gap-2`}
+        >
+          <Text className="text-gray-600">{t("Don't have an account?")}</Text>
           <Link href="/(auth)/signup">
-            <Text className="text-green-800 font-semibold ml-1">Sign up</Text>
+            <Text className="text-green-800 font-semibold ml-1">
+              {t("Sign Up")}
+            </Text>
           </Link>
         </View>
       </View>

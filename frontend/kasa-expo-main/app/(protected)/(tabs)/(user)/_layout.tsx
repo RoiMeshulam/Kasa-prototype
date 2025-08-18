@@ -1,7 +1,9 @@
 import { Stack } from "expo-router";
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 const UserLayout = () => {
+  const { t } = useTranslation();
   return (
     <Stack>
       <Stack.Screen name="profile" options={{ headerShown: false }} />
@@ -12,7 +14,8 @@ const UserLayout = () => {
             backgroundColor: "#32a852",
           },
           headerTintColor: "#fff",
-          title: "Edit Profile",
+          title: t("Edit Profile"),
+          headerBackTitle: t("Back")
         }}
       />
     </Stack>

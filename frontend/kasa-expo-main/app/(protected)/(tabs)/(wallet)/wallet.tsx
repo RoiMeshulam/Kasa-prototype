@@ -13,38 +13,41 @@ import { AntDesign } from "@expo/vector-icons";
 import { InputField } from "@/components/ui/InputField";
 import { useGlobalContext } from "@/store/globalContext";
 import { transactions } from "@/utils/DUMMY_DATA";
+import { useTranslation } from "react-i18next";
 
 export default function WalletScreen() {
   const [value, setValue] = useState("");
   const router = useRouter();
   const { userInfo } = useGlobalContext();
+  const { t, i18n } = useTranslation();
 
   const filteredData = transactions.filter((item) =>
     item.location_name.toLowerCase().includes(value.toLowerCase())
   );
 
   return (
-    <SafeAreaView>
+    <SafeAreaView className="bg-gray-100 h-full">
       <Header />
       <View className="flex items-center gap-3 mb-12">
-        <Text className="font-thin">Balance</Text>
+        <Text className="font-thin">{t("Balance")}</Text>
         <View className="flex-row items-end">
-          <Text className="text-xs">$</Text>
+          <Text className="text-lg text-green-600">$</Text>
           <Text className="text-6xl font-bold">
             {Number(userInfo?.balance).toFixed(2)}
           </Text>
         </View>
       </View>
-      <View className="mx-4">
+      <View className="mx-4 shadow-md android:shadow-black android:shadow-2xl">
         <FlatList
           ListHeaderComponent={
             <InputField
               autoCapitalize="none"
               value={value}
-              placeholder="Search"
+              placeholder={t("Search")}
               placeholderTextColor="#9CA3AF"
               onChangeText={setValue}
               icon={<AntDesign name="search1" size={24} />}
+              search
             />
           }
           ListHeaderComponentStyle={{
@@ -61,8 +64,12 @@ export default function WalletScreen() {
               }}
               asChild
             >
-              <Pressable className="px-4 py-2 border-b border-gray-100 flex-row">
-                <View className="flex-grow">
+              <Pressable
+                className={`px-4 py-2 border-b border-gray-100 ${i18n.language === "he" ? "flex-row-reverse" : "flex-row"}`}
+              >
+                <View
+                  className={`flex-grow ${i18n.language === "he" && "items-end"}`}
+                >
                   <Text className="font-semibold text-xl">
                     {item.location_name}
                   </Text>
@@ -85,14 +92,14 @@ export default function WalletScreen() {
           )}
           ListEmptyComponent={() => {
             return (
-              <View className="h-full flex justify-center items-center">
-                <Text className="text-lg">No items found</Text>
+              <View className="flex-1 h-full flex justify-center items-center">
+                <Text className="text-lg p-4">{t("No items found")}</Text>
               </View>
             );
           }}
           ListFooterComponent={
             <Button
-              title="Show more"
+              title={t("Show more")}
               color={"green"}
               onPress={() => {
                 router.push({

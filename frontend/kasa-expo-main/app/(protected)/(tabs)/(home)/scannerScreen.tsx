@@ -13,7 +13,7 @@ import { useRouter } from 'expo-router';
 
 type Stage = 'scannerQR' | 'scannerBottle' | 'insertBottle' | 'summary' | 'receipt';
 
-const API = 'http://10.0.0.9:8080';
+const API = 'http://10.0.0.8:8080';
 
 export default function ScannerScreen() {
   const [stage, setStage] = useState<Stage>('scannerQR');

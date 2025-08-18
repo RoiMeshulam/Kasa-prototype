@@ -15,14 +15,17 @@ import axios from "axios";
 import { InputField } from "@/components/ui/InputField";
 import { useFormValidation } from "@/hooks/useFormValidation";
 import { formSchema, FormValues } from "@/utils/formSchema";
+import { useTranslation } from "react-i18next";
+import i18n from "@/localization/i18n";
 
-const SOCKET_SERVER_URL = "http://10.0.0.9:8080";
+const SOCKET_SERVER_URL = "http://10.0.0.8:8080";
 // Platform.OS === "android" ? "http://10.0.2.2:8080" : "http://localhost:8080";
 // Platform.OS === "android" ? "http://10.0.0.9:8080" : "http://localhost:8080"; // for emulator expo
 
 const SignUpScreen = () => {
   const [alertVisible, setAlertVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   const { values, errors, handleChange, validate, resetForm } =
     useFormValidation<FormValues>(formSchema, {
@@ -102,13 +105,15 @@ const SignUpScreen = () => {
           </Text>
         </View>
 
-        <Text className="text-xl font-bold text-start mb-4 text-black">
-          Create your account
+        <Text
+          className={`text-xl font-bold mb-4 text-black ${i18n.language === "he" && "self-end"}`}
+        >
+          {t("Create your account")}
         </Text>
 
-        <View className="gap-4">
+        <View className="gap-1">
           <InputField
-            text="Name"
+            text={t("User name")}
             value={values.name}
             placeholder="Enter your name"
             onChangeText={(v) => handleChange("name", v)}
@@ -117,9 +122,9 @@ const SignUpScreen = () => {
           />
 
           <InputField
-            text="Phone Number"
+            text={t("Phone")}
             value={values.phone}
-            placeholder="Enter phone number"
+            placeholder={t("Enter your phone number")}
             keyboardType="phone-pad"
             onChangeText={(v) => handleChange("phone", v)}
             editable={!loading}
@@ -127,9 +132,9 @@ const SignUpScreen = () => {
           />
 
           <InputField
-            text="Email"
+            text={t("Email")}
             value={values.email}
-            placeholder="Enter email"
+            placeholder={t("Enter your email")}
             autoCapitalize="none"
             keyboardType="email-address"
             onChangeText={(v) => handleChange("email", v)}
@@ -138,9 +143,9 @@ const SignUpScreen = () => {
           />
 
           <InputField
-            text="Password"
+            text={t("Password")}
             value={values.password}
-            placeholder="Enter password"
+            placeholder={t("Enter password")}
             secureTextEntry
             onChangeText={(v) => handleChange("password", v)}
             editable={!loading}
@@ -148,9 +153,9 @@ const SignUpScreen = () => {
           />
 
           <InputField
-            text="Confirm Password"
+            text={t("Confirm Password")}
             value={values.confirmPassword}
-            placeholder="Confirm password"
+            placeholder={t("Confirm Password")}
             secureTextEntry
             onChangeText={(v) => handleChange("confirmPassword", v)}
             editable={!loading}
@@ -166,16 +171,20 @@ const SignUpScreen = () => {
               <ActivityIndicator size={"small"} color={"#fff"} />
             ) : (
               <Text className="text-white text-center font-semibold">
-                Sign Up
+                {t("Sign Up")}
               </Text>
             )}
           </TouchableOpacity>
         </View>
 
-        <View className="flex-row justify-center items-center mt-6 gap-2">
-          <Text className="text-gray-600">Have an account?</Text>
+        <View
+          className={`${i18n.language === "he" ? "flex-row-reverse" : "flex-row"} justify-center items-center mt-6 gap-2`}
+        >
+          <Text className="text-gray-600">{t("Have an account?")}</Text>
           <Link href="/(auth)/login">
-            <Text className="text-green-800 font-semibold ml-1">Sign in</Text>
+            <Text className="text-green-800 font-semibold ml-1">
+              {t("Sign In")}
+            </Text>
           </Link>
         </View>
       </View>

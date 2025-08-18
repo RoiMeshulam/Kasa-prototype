@@ -2,7 +2,7 @@ import { View, Text } from "react-native";
 
 export const Header = () => {
   return (
-    <View className="gap-1 flex items-center my-12 ">
+    <View className="gap-1 flex items-center my-12 android:mt-20">
       <Text className="text-4xl font-black text-center text-green-800">
         RecycleMate
       </Text>

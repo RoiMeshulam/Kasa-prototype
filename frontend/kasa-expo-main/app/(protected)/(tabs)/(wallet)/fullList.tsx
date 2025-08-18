@@ -4,10 +4,12 @@ import { Link } from "expo-router";
 import { AntDesign } from "@expo/vector-icons";
 import { InputField } from "@/components/ui/InputField";
 import { transactions } from "@/utils/DUMMY_DATA";
+import { useTranslation } from "react-i18next";
 
 const FullListScreen = () => {
   const [value, setValue] = useState("");
   const [filteredData, setFilteredData] = useState(transactions);
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -26,10 +28,11 @@ const FullListScreen = () => {
         <InputField
           autoCapitalize="none"
           value={value}
-          placeholder="Search"
+          placeholder={t("Search")}
           placeholderTextColor="#9CA3AF"
           onChangeText={setValue}
           icon={<AntDesign name="search1" size={24} />}
+          search
         />
       }
       ListHeaderComponentStyle={{
@@ -46,8 +49,12 @@ const FullListScreen = () => {
           }}
           asChild
         >
-          <Pressable className="px-4 py-2 border-b border-gray-100 flex-row">
-            <View className="flex-grow">
+          <Pressable
+            className={`px-4 py-2 border-b border-gray-100 ${i18n.language === "he" ? "flex-row-reverse" : "flex-row"}`}
+          >
+            <View
+              className={`flex-grow ${i18n.language === "he" && "items-end"}`}
+            >
               <Text className="font-semibold text-xl">
                 {item.location_name}
               </Text>
@@ -71,7 +78,7 @@ const FullListScreen = () => {
       ListEmptyComponent={() => {
         return (
           <View className="h-full flex justify-center items-center">
-            <Text className="text-lg">No items found</Text>
+            <Text className="text-lg">{t("No items found")}</Text>
           </View>
         );
       }}

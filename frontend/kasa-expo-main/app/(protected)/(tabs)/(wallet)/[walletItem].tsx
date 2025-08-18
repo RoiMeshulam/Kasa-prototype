@@ -11,9 +11,12 @@ import { Link, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { bottles_detailed } from "@/utils/DUMMY_DATA";
 import { DetailList } from "@/components/detail-list";
+import { useTranslation } from "react-i18next";
+import { useGlobalContext } from "@/store/globalContext";
 
 const WalletDetailScreen = () => {
   const params = useLocalSearchParams();
+  const { t, i18n } = useTranslation();
 
   return (
     <SafeAreaView>
@@ -27,23 +30,23 @@ const WalletDetailScreen = () => {
           {params.location_name}
         </Text>
         <View className="flex items-center gap-3 mb-10">
-          <Text className="font-thin">Balance</Text>
+          <Text className="font-thin">{t("Accumulated")}</Text>
           <Text className="text-6xl font-bold">138.30</Text>
         </View>
 
-        <DetailList data={bottles_detailed} text="Details:" />
+        <DetailList data={bottles_detailed} text={`${t("Details")}:`} />
 
         <View className="mx-8 gap-y-4">
           <View className="flex-row justify-between">
-            <Text>Status</Text>
+            <Text>{t("Status")}</Text>
             <Text>{params.status}</Text>
           </View>
           <View className="flex-row justify-between">
-            <Text>Date</Text>
+            <Text>{t("Date")}</Text>
             <Text>{params.date}</Text>
           </View>
           <View className="flex-row justify-between">
-            <Text>Time</Text>
+            <Text>{t("Time")}</Text>
             <Text>{params.date}</Text>
           </View>
         </View>

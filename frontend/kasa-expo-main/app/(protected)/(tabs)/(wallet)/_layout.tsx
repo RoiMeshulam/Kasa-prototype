@@ -1,7 +1,10 @@
 import { Stack } from "expo-router";
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 const WalletLayout = () => {
+  const { t } = useTranslation();
+
   return (
     <Stack>
       <Stack.Screen name="wallet" options={{ headerShown: false }} />
@@ -16,8 +19,8 @@ const WalletLayout = () => {
             backgroundColor: "#32a852",
           },
           headerTintColor: "#fff",
-          title: "Edit Profile",
-          headerBackTitle: 'Back'
+          title: t("All scans"),
+          headerBackTitle: t("Back"),
         }}
       />
     </Stack>
