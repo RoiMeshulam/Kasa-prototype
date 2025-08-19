@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { updateUser } from "@/services/apiServices";
 
 const EditProfileScreen = () => {
   const { userInfo, setUserInfo } = useGlobalContext();
@@ -28,19 +29,36 @@ const EditProfileScreen = () => {
     try {
       setLoading(true);
       const isValid = await validate();
-      if (isValid) {
-        console.log("Success", "Form submitted!");
-        setUserInfo({
-          uid: userInfo?.uid as string,
-          balance: userInfo?.balance as string,
-          email: values.email,
-          phoneNumber: values.phone,
-          name: values.name,
-        });
+      if (!isValid) {
+        setLoading(false);
+        return;
       }
+  
+      if (!userInfo?.uid) {
+        throw new Error("User ID missing");
+      }
+  
+      // 🔹 שליחת הבקשה לשרת
+      const updatedUser = await updateUser(userInfo.uid, {
+        name: values.name,
+        email: values.email,
+        phoneNumber: values.phone,
+      });
+  
+      // 🔹 עדכון ה-GlobalContext עם המידע המוחזר מהשרת
+      setUserInfo({
+        uid: userInfo.uid,
+        balance: updatedUser.balance, // אם השרת מחזיר balance
+        name: updatedUser.name,
+        email: updatedUser.email,
+        phoneNumber: updatedUser.phoneNumber,
+      });
+  
+      console.log("✅ User updated:", updatedUser);
       setLoading(false);
-    } catch (error) {
-      // resetForm();
+    } catch (error: any) {
+      console.error("❌ Error updating user:", error);
+      alert(error.response?.data?.error || error.message);
       setLoading(false);
     }
   };

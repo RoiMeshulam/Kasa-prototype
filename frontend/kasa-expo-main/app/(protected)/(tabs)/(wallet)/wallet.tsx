@@ -12,18 +12,18 @@ import { useState } from "react";
 import { AntDesign } from "@expo/vector-icons";
 import { InputField } from "@/components/ui/InputField";
 import { useGlobalContext } from "@/store/globalContext";
-import { transactions } from "@/utils/DUMMY_DATA";
 import { useTranslation } from "react-i18next";
+
 
 export default function WalletScreen() {
   const [value, setValue] = useState("");
   const router = useRouter();
-  const { userInfo } = useGlobalContext();
+  const { userInfo, userSessions, machines } = useGlobalContext();
   const { t, i18n } = useTranslation();
 
-  const filteredData = transactions.filter((item) =>
-    item.location_name.toLowerCase().includes(value.toLowerCase())
-  );
+
+  console.log({ userSessions: userSessions });
+
 
   return (
     <SafeAreaView className="bg-gray-100 h-full">
@@ -55,41 +55,52 @@ export default function WalletScreen() {
             borderBottomWidth: 1,
           }}
           className="bg-white rounded-lg"
-          data={filteredData.slice(0, 5)}
+          data={userSessions.slice(0, 5)}
           renderItem={({ item }: { item: any }) => (
             <Link
               href={{
                 pathname: "/(protected)/(tabs)/(wallet)/[walletItem]",
-                params: item,
+                params: {
+                  walletItem: JSON.stringify({
+                    sessionId: item.sessionId,
+                    machineId: item.machineId,
+                    machineName: item.machineName,
+                    balance: item.balance,
+                    status: item.status,
+                    createdAtISO: item.createdAtISO,
+                    endedAtISO: item.endedAtISO,
+                    totalQuantity: item.totalQuantity,
+                    bottles: item.bottles,
+                  }),
+                },
               }}
               asChild
             >
               <Pressable
-                className={`px-4 py-2 border-b border-gray-100 ${i18n.language === "he" ? "flex-row-reverse" : "flex-row"}`}
+                className={`px-4 py-2 border-b border-gray-100 ${i18n.language === "he" ? "flex-row-reverse" : "flex-row"
+                  }`}
               >
-                <View
-                  className={`flex-grow ${i18n.language === "he" && "items-end"}`}
-                >
-                  <Text className="font-semibold text-xl">
-                    {item.location_name}
-                  </Text>
+                <View className={`flex-grow ${i18n.language === "he" && "items-end"}`}>
+                  <Text className="font-semibold text-xl">{item.machineName}</Text>
                   <View className="flex-row text-base text-gray-300">
-                    <Text>{item.date}</Text>
+                    <Text>{new Date(item.endedAtISO).toLocaleDateString()}</Text>
                     <Text> | </Text>
                     <Text>{item.status}</Text>
                   </View>
                 </View>
                 <View
-                  className={`w-8 h-8 flex items-center justify-center rounded-full ${item.status === "הצלחה" ? "bg-green-500" : "bg-red-500"}`}
+                  className={`w-8 h-8 flex items-center justify-center rounded-full ${item.status === "closed" ? "bg-green-500" : "bg-red-500"
+                    }`}
                 >
                   <AntDesign
-                    name={item.status === "הצלחה" ? "check" : "close"}
+                    name={item.status === "closed" ? "check" : "close"}
                     color={"#fff"}
                   />
                 </View>
               </Pressable>
             </Link>
           )}
+
           ListEmptyComponent={() => {
             return (
               <View className="flex-1 h-full flex justify-center items-center">

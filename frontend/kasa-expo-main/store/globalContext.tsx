@@ -3,7 +3,7 @@ import axios from "axios";
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const SOCKET_SERVER_URL = "http://10.0.0.8:8080";
+const SOCKET_SERVER_URL = "http://10.0.0.9:8080";
 // Platform.OS === "android" ? "http://10.0.0.9:8080" : "http://localhost:8080";
 
 interface Bottle {
@@ -15,6 +15,7 @@ interface Bottle {
 interface Machine {
   id: string;
   location: string;
+  name: string; 
   // שדות נוספים אם יש
 }
 
@@ -32,18 +33,17 @@ type SessionBottles = Record<string, SessionBottle>;
 /** מבנה סשן כפי שנשמר ב-RTDB/מוחזר מה-API */
 interface Session {
   sessionId: string;
-  machineId: string;
   userId: string;
-  balance: number;          // מספר מעוגל לשתי ספרות
+  machineId: string;
+  status: "closed" | "open" | "pending"; // או מילים אחרות שמגיעות מהשרת
   totalQuantity: number;
-  bottles: SessionBottles;  // אובייקט ולא מערך
-  status: "active" | "closed";
-  // סגורים:
-  createdAt?: number;       // ms epoch (persisted)
-  endedAt?: number;         // ms epoch (persisted)
-  // פעילים (כשנקרא /api/sessions/:id על סשן פתוח):
-  createdAtMs?: number;
-  createdAtISO?: string | null;
+  balance: number;
+  bottles: SessionBottles;
+  createdAtISO: string;
+  createdAtMs: number;
+  endedAtISO?: string;
+  endedAtMs?: number;
+  // machineName?: string;
 }
 
 interface UserInfo {
@@ -57,15 +57,13 @@ interface UserInfo {
 interface UserMonthlySummary {
   userId: string;
   year: number;
-  month: number;                 // 1..12
+  month: number;          // 1..12
   sessionsCount: number;
-  totalBottles: number;
-  totalBalance: number;          // סכום חודשי מעוגל
-  byBottle: Record<
-    string,
-    { id: string; name: string; price: number; quantity: number; totalAmount: number }
-  >;
-  range: { fromMs: number; toMs: number };
+  bottlesCount: number;
+  totalBalance: number;
+  fromMs: number;
+  toMs: number;
+  allTimeBottlesCount:number;
 }
 
 interface GlobalContextType {
@@ -136,6 +134,14 @@ export const GlobalProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [userInfo, isConnected]);
 
+  const machinesMap = machines.reduce((acc, machine) => {
+    acc[machine.id] = machine.name;
+    return acc;
+  }, {} as Record<string, string>);
+  
+  // פונקציה לקבלת שם מכונה
+  const getMachineName = (machineId: string) => machinesMap[machineId] || machineId;
+
   return (
     <GlobalContext.Provider
       value={{
@@ -148,7 +154,8 @@ export const GlobalProvider = ({ children }: { children: React.ReactNode }) => {
         userSessions,
         setUserSessions,
         userMonthlySummary,          
-        setUserMonthlySummary,       
+        setUserMonthlySummary,  
+             
       }}
     >
       {children}

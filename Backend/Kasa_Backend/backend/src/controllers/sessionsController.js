@@ -14,41 +14,44 @@ const {
   monthlySummaryByUser,
 } = require('../services/sessionStore.service');
 
-const { rtdb } = require('../firebase');
+const { rtdb, firestoreDb } = require('../firebase');
 
 // --- helpers ---
-function round2(n) {
-  return Math.round((Number(n) || 0) * 100) / 100;
-}
-function toISO(ts) {
-  return ts ? new Date(ts).toISOString() : null;
-}
-/** המרת סשן פעיל (Map) לפורמט JSON נוח ללקוח – ללא endedAt/status: 'closed' */
-function serializeActiveSession(sessionId, session) {
+const round2 = (n) => Math.round((Number(n) || 0) * 100) / 100;
+const toISO = (ts) => (ts ? new Date(ts).toISOString() : null);
+
+const serializeActiveSession = (sessionId, session) => {
   const bottlesArr = Array.from(session.bottles?.values?.() || []);
   const totalQuantity = bottlesArr.reduce((sum, b) => sum + (b.quantity || 0), 0);
   const bottlesObj = bottlesArr.reduce((acc, b) => {
-    acc[b.id] = { id: b.id, name: b.name, price: round2(b.price), quantity: b.quantity || 0 };
+    acc[b.id] = {
+      id: b.id,
+      name: b.name,
+      price: round2(b.price),
+      quantity: b.quantity || 0,
+    };
     return acc;
   }, {});
   const createdAtMs = session.createdAt || Date.now();
+
   return {
     sessionId,
     machineId: session.machineId,
+    qrId: session.qrId,
+    machineName: session.machineName,
     userId: session.userId,
     balance: round2(session.balance || 0),
     totalQuantity,
     bottles: bottlesObj,
     createdAtMs,
     createdAtISO: toISO(createdAtMs),
-    status: 'active',
+    status: session.status || 'active',
   };
-}
+};
 
-/**
- * POST /api/sessions
- * body: { qrId, userId }
- */
+
+// --- Controllers ---
+
 exports.createSession = async (req, res) => {
   try {
     const { qrId, userId } = req.body;
@@ -65,9 +68,24 @@ exports.createSession = async (req, res) => {
       return res.status(400).json({ error: 'User or machine not connected' });
     }
 
+    const machineQuery = await firestoreDb
+      .collection('machines')
+      .where('qrId', '==', qrId)
+      .limit(1)
+      .get();
+
+    if (machineQuery.empty) return res.status(404).json({ error: 'Machine not found' });
+
+    const machineDoc = machineQuery.docs[0];
+    const machineData = machineDoc.data();
+    const machineId = machineDoc.id;
+    const machineName = machineData.name || qrId;
+
     const sessionId = `session_${Date.now()}`;
     activeSessions.set(sessionId, {
-      machineId: qrId,
+      machineId,
+      qrId,
+      machineName,
       userId,
       bottles: new Map(),
       balance: 0,
@@ -76,44 +94,34 @@ exports.createSession = async (req, res) => {
       status: 'active',
     });
 
-    io.to(machineSocketId).emit('session_started', { sessionId, userId });
-    io.to(userSocketId).emit('session_started', { sessionId, machineId: qrId });
+    io.to(machineSocketId).emit('session_started', { sessionId, userId, machineName });
+    io.to(userSocketId).emit('session_started', { sessionId, machineId, machineName });
 
-    res.json({ sessionId });
-  } catch (e) {
-    console.error('createSession failed:', e);
-    res.status(500).json({ error: 'internal error' });
+    return res.json({ sessionId, machineId, machineName });
+  } catch (err) {
+    console.error('createSession failed:', err);
+    return res.status(500).json({ error: 'internal server error' });
   }
 };
 
-/**
- * GET /api/sessions/:id
- * אם הסשן פעיל – החזרה מהזיכרון; אחרת – מ־RTDB אם קיים.
- */
 exports.getSession = async (req, res) => {
   try {
     const { id: sessionId } = req.params;
     const activeSessions = getActiveSessions();
     const session = activeSessions.get(sessionId);
 
-    if (session) {
-      return res.json(serializeActiveSession(sessionId, session));
-    }
+    if (session) return res.json(serializeActiveSession(sessionId, session));
 
     const persisted = await getPersistedSession(sessionId);
     if (persisted) return res.json(persisted);
 
-    res.status(404).json({ error: 'session not found' });
-  } catch (e) {
-    console.error('getSession failed:', e);
-    res.status(500).json({ error: 'internal error' });
+    return res.status(404).json({ error: 'session not found' });
+  } catch (err) {
+    console.error('getSession failed:', err);
+    return res.status(500).json({ error: 'internal server error' });
   }
 };
 
-/**
- * PATCH /api/sessions/:id
- * body: { currentBottleId? }
- */
 exports.updateSession = async (req, res) => {
   try {
     const { id: sessionId } = req.params;
@@ -123,26 +131,19 @@ exports.updateSession = async (req, res) => {
     const session = activeSessions.get(sessionId);
     if (!session) return res.status(404).json({ error: 'session not found or already closed' });
 
-    if (typeof currentBottleId === 'string') {
-      session.currentBottleId = currentBottleId;
-    }
+    if (typeof currentBottleId === 'string') session.currentBottleId = currentBottleId;
 
     activeSessions.set(sessionId, session);
-    res.json({ ok: true });
-  } catch (e) {
-    console.error('updateSession failed:', e);
-    res.status(500).json({ error: 'internal error' });
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('updateSession failed:', err);
+    return res.status(500).json({ error: 'internal server error' });
   }
 };
 
-/**
- * POST /api/sessions/:id/end
- * סוגר ומPersist-א את הסשן, מעדכן יתרה, ומשדר session_closed.
- */
 exports.endSession = async (req, res) => {
   try {
     const { id: sessionId } = req.params;
-
     const io = getIO();
     const activeSessions = getActiveSessions();
     const session = activeSessions.get(sessionId);
@@ -159,36 +160,27 @@ exports.endSession = async (req, res) => {
     const userSockets = getUserSockets();
     const uSock = userSockets.get(session.userId);
     const mSock = machineSockets.get(session.machineId);
-    if (uSock) io.to(uSock).emit('session_closed');
-    if (mSock) io.to(mSock).emit('session_closed');
+    if (uSock) io.to(uSock).emit('session_closed', { sessionId });
+    if (mSock) io.to(mSock).emit('session_closed', { sessionId });
 
-    res.json({ ok: true, session: payload });
-  } catch (e) {
-    console.error('endSession failed:', e);
-    res.status(500).json({ error: 'internal error' });
+    return res.json({ ok: true, session: payload });
+  } catch (err) {
+    console.error('endSession failed:', err);
+    return res.status(500).json({ error: 'internal server error' });
   }
 };
 
-/**
- * GET /api/sessions
- * query: ?limit=50
- * רשימת סשנים אחרונים (סגורים) מכלל המערכת
- */
 exports.listSessions = async (req, res) => {
   try {
     const limit = Math.max(1, Math.min(Number(req.query.limit) || 50, 500));
-    const list = await listPersistedSessions(limit);
-    res.json(list);
-  } catch (e) {
-    console.error('listSessions failed:', e);
-    res.status(500).json({ error: 'internal error' });
+    const sessions = await listPersistedSessions(limit);
+    return res.json(sessions);
+  } catch (err) {
+    console.error('listSessions failed:', err);
+    return res.status(500).json({ error: 'internal server error' });
   }
 };
 
-/**
- * GET /api/sessions/user/:userId
- * query: ?limit=200&fromMs=...&toMs=... או ?year=YYYY&month=1..12
- */
 exports.listUserSessions = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -197,7 +189,6 @@ exports.listUserSessions = async (req, res) => {
     let fromMs = req.query.fromMs ? Number(req.query.fromMs) : undefined;
     let toMs = req.query.toMs ? Number(req.query.toMs) : undefined;
 
-    // אם יש year+month ואין טווח מפורש—נגזור טווח חודשי (UTC)
     const year = req.query.year ? Number(req.query.year) : undefined;
     const month = req.query.month ? Number(req.query.month) : undefined;
     if (year && month && !fromMs && !toMs) {
@@ -208,43 +199,56 @@ exports.listUserSessions = async (req, res) => {
     }
 
     const sessions = await listSessionsByUser(userId, { fromMs, toMs, limit, sortDesc: true });
-    res.json(sessions);
-  } catch (e) {
-    console.error('listUserSessions failed:', e);
-    res.status(500).json({ error: 'internal error' });
+    return res.json(sessions);
+  } catch (err) {
+    console.error('listUserSessions failed:', err);
+    return res.status(500).json({ error: 'internal server error' });
   }
 };
 
-/**
- * GET /api/sessions/user/:userId/summary
- * query: ?year=YYYY&month=1..12
- */
+
+async function totalBottlesAllTime(userId) {
+  // limit=0 = אין הגבלה, נקבל את כל הסשנים
+  const sessions = await listSessionsByUser(userId, { limit: 0, sortDesc: false });
+
+  const total = sessions.reduce((acc, s) => {
+    acc.bottlesCount += Number(s.totalQuantity || 0);
+    return acc;
+  }, { bottlesCount: 0 });
+
+  return total.bottlesCount;
+}
+
 exports.userMonthlySummary = async (req, res) => {
   try {
     const { userId } = req.params;
     const year = req.query.year ? Number(req.query.year) : undefined;
     const month = req.query.month ? Number(req.query.month) : undefined;
 
+    // סיכום החודש
     const summary = await monthlySummaryByUser(userId, { year, month });
-    res.json(summary);
-  } catch (e) {
-    console.error('userMonthlySummary failed:', e);
-    res.status(500).json({ error: 'internal error' });
+
+    // סך כל הבקבוקים של המשתמש לכל הזמנים
+    const allTimeBottlesCount = await totalBottlesAllTime(userId);
+
+    // מחזיר את זה יחד
+    return res.json({
+      ...summary,
+      allTimeBottlesCount, // כאן הסה"כ של כל הבקבוקים
+    });
+  } catch (err) {
+    console.error('userMonthlySummary failed:', err);
+    return res.status(500).json({ error: 'internal server error' });
   }
 };
 
-/**
- * DELETE /api/sessions/:id
- * מוחק סשן מ־RTDB (לא סוגר סשן פעיל; לשם כך יש /end)
- */
 exports.deleteSession = async (req, res) => {
   try {
     const { id: sessionId } = req.params;
     await rtdb.ref(`/sessions/${sessionId}`).remove();
-    // אופציונלי: מחיקת מצביעים ב-users/<uid>/sessions וב-machines/<id>/sessions
-    res.json({ ok: true });
-  } catch (e) {
-    console.error('deleteSession failed:', e);
-    res.status(500).json({ error: 'internal error' });
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('deleteSession failed:', err);
+    return res.status(500).json({ error: 'internal server error' });
   }
 };

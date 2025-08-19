@@ -76,30 +76,48 @@ const signUp = async (req, res) => {
   }
 };
 
-// // Get all users from Firebase Realtime Database
-// const getUsers = async (req, res) => {
-//   try {
-//     // Fetch all users from the "users" node
-//     const snapshot = await rtdb.ref("users").once("value");
-//     const users = snapshot.val();
+const updateUser = async (req, res) => {
+  const { uid } = req.params;
+  const { name, phoneNumber, email } = req.body;
 
-//     if (!users) {
-//       return res.status(404).json({ message: "No users found" });
-//     }
+  if (!uid) return res.status(400).json({ error: "Missing uid" });
 
-//     // Convert object to an array with user UID included
-//     const usersList = Object.keys(users).map(uid => ({
-//       uid,
-//       ...users[uid],
-//     }));
+  try {
+    // 🔹 Verify Firebase Authentication token (אם עוד לא עשית ב-middleware)
+    // const decodedToken = await admin.auth().verifyIdToken(token);
+    // if (decodedToken.uid !== uid) return res.status(403).json({ error: "Unauthorized" });
+    console.log(uid);
+    // 🔹 עדכון פרטים ב-RTDB
+    const userRef = rtdb.ref(`users/${uid}`);
 
-//     res.status(200).json(usersList);
-//   } catch (error) {
-//     console.error("Error fetching users:", error);
-//     res.status(500).json({ error: "Internal Server Error" });
-//   }
-// };
+    const snapshot = await userRef.once("value");
+    if (!snapshot.exists()) {
+      return res.status(404).json({ error: "User not found" });
+    }
 
-module.exports = { signIn, signUp };
+    const updates = {};
+    if (name !== undefined) updates.name = name;
+    if (phoneNumber !== undefined) updates.phoneNumber = phoneNumber;
+    if (email !== undefined) {
+      updates.email = email;
+    }
+
+    await userRef.update(updates);
+
+    const updatedUser = (await userRef.once("value")).val();
+
+    return res.status(200).json({
+      message: "User updated successfully",
+      uid,
+      ...updatedUser,
+    });
+
+  } catch (error) {
+    console.error("Error updating user:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+module.exports = { signIn, signUp, updateUser };
 
 

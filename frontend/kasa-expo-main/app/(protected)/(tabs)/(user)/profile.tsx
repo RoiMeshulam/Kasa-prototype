@@ -16,7 +16,7 @@ import { useTranslation } from "react-i18next";
 import { toggleLanguage } from "@/localization/i18n";
 
 const ProfileScreen = () => {
-  const { userInfo } = useGlobalContext();
+  const { userInfo, userMonthlySummary } = useGlobalContext();
   const { t, i18n } = useTranslation();
 
   const onToggle = async () => {
@@ -24,6 +24,7 @@ const ProfileScreen = () => {
     // Expo Go may hot-reload. In standalone apps you might need to reload manually.
   };
 
+  console.log(userMonthlySummary);
   return (
     <SafeAreaView className="mx-4 gap-y-1 flex">
       <Header />
@@ -68,27 +69,28 @@ const ProfileScreen = () => {
         <View className="w-full flex-row flex-wrap justify-between">
           <View className="w-[48%] aspect-square bg-green-500 rounded-lg items-center justify-center mb-4">
             <Text className="text-2xl font-bold text-white">
-              {users[0].balance}
+              {userInfo?.balance}
             </Text>
-            <Text className="text-white">Total this month</Text>
+            <Text className="text-white text-center">Balance</Text>
           </View>
           <View className="w-[48%] aspect-square bg-green-500 rounded-lg items-center justify-center mb-4">
             <Text className="text-2xl font-bold text-white">
-              {users[0].balance}
+              {userMonthlySummary?.totalBalance}
             </Text>
-            <Text className="text-white">Total this month</Text>
+            <Text className="text-white text-center">Balance this month</Text>
           </View>
           <View className="w-[48%] aspect-square bg-green-500 rounded-lg items-center justify-center mb-4">
             <Text className="text-2xl font-bold text-white">
-              {users[0].balance}
+              {userMonthlySummary?.bottlesCount}
             </Text>
-            <Text className="text-white">Total this month</Text>
+            <Text className="text-white text-center">Total bottles recycled this month</Text>
+            
           </View>
           <View className="w-[48%] aspect-square bg-green-500 rounded-lg items-center justify-center mb-4">
             <Text className="text-2xl font-bold text-white">
-              {users[0].balance}
+              {userMonthlySummary?.allTimeBottlesCount}
             </Text>
-            <Text className="text-white">Total this month</Text>
+            <Text className="text-white text-center">Total bottles recycled</Text>
           </View>
           <View className="w-full gap-y-4 mt-4">
             <TouchableOpacity

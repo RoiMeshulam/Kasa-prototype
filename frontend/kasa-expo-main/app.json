@@ -12,7 +12,8 @@
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "האפליקציה צריכה גישה למצלמה כדי לסרוק ברקודים",
-        "NSMicrophoneUsageDescription": "האפליקציה צריכה גישה למיקרופון עבור שימוש עתידי"
+        "NSMicrophoneUsageDescription": "האפליקציה צריכה גישה למיקרופון עבור שימוש עתידי",
+        "NSLocationWhenInUseUsageDescription": "האפליקציה צריכה גישה למיקום שלך כדי להציג את המכונות הקרובות"
       }
     },
     "android": {

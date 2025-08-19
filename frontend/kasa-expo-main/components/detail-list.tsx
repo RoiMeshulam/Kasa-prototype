@@ -14,6 +14,8 @@ export const DetailList = ({
   count = 5,
   buttonTitle,
 }: DetailListProps) => {
+
+  console.log({roi_data:data})
   return (
     <View className="mx-4">
       <FlatList
@@ -32,9 +34,7 @@ export const DetailList = ({
           <View className="px-4 py-2 border-b border-gray-100 flex-row">
             <View className="flex-grow">
               <View className="flex-row text-base text-gray-300">
-                <Text>{item.brand}</Text>
-                <Text> | </Text>
-                <Text>{item.material}</Text>
+                <Text>{item.name}</Text>
               </View>
             </View>
             <View
