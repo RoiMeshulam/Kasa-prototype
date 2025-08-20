@@ -1,14 +1,15 @@
-
 FROM node:16
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY Backend/Kasa_Backend/backend/package*.json ./
 
 RUN npm install
 
-COPY . .
+COPY Backend/Kasa_Backend/backend/ .
 
-EXPOSE 3000
+EXPOSE 8080
+
+ENV PORT=8080
 
 CMD ["npm", "start"]
