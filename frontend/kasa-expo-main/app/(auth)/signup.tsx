@@ -71,6 +71,7 @@ const SignUpScreen = () => {
         console.log("good");
 
         showCustomAlert("הצלחה", "נרשמת בהצלחה!", "success");
+        resetForm();
       }
       setLoading(false);
     } catch (error: any) {

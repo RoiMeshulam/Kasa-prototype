@@ -22,7 +22,18 @@ export default function WalletScreen() {
   const { t, i18n } = useTranslation();
 
 
-  console.log({ userSessions: userSessions });
+  // console.log({ userSessions: userSessions });
+
+  const filteredSessions = userSessions
+  .filter((session: any) => {
+    const searchLower = value.toLowerCase();
+    return (
+      session.machineName.toLowerCase().includes(searchLower) ||
+      session.status.toLowerCase().includes(searchLower)
+      // אפשר להוסיף עוד שדות אם רוצים לחפש לפי כל דבר
+    );
+  })
+  .slice(0, 5); // אם אתה רוצה להגביל ל־5
 
 
   return (
@@ -55,7 +66,7 @@ export default function WalletScreen() {
             borderBottomWidth: 1,
           }}
           className="bg-white rounded-lg"
-          data={userSessions.slice(0, 5)}
+          data={filteredSessions}
           renderItem={({ item }: { item: any }) => (
             <Link
               href={{
@@ -84,8 +95,8 @@ export default function WalletScreen() {
                   <Text className="font-semibold text-xl">{item.machineName}</Text>
                   <View className="flex-row text-base text-gray-300">
                     <Text>{new Date(item.endedAtISO).toLocaleDateString()}</Text>
-                    <Text> | </Text>
-                    <Text>{item.status}</Text>
+                    <Text> | </Text> 
+                    {item.status == "closed" ? <Text>{t("Completed")}</Text> :<Text>{t("Failed")}</Text> }
                   </View>
                 </View>
                 <View

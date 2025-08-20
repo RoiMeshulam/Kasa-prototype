@@ -13,6 +13,7 @@ import {
   View,
 } from "react-native";
 import { updateUserProfile } from "@/services/userServices";
+import CustomAlert from "@/components/ui/CustomAlert";
 
 const EditProfileScreen = () => {
   const { userInfo, setUserInfo } = useGlobalContext();
@@ -24,6 +25,22 @@ const EditProfileScreen = () => {
       email: userInfo?.email as string,
     });
   const [loading, setLoading] = useState(false);
+
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertData, setAlertData] = useState<{
+    title: string;
+    message: string;
+    type?: "success" | "error";
+  }>({
+    title: "",
+    message: "",
+    type: undefined,
+  });
+
+  const showAlert = (title: string, message: string, type: "success" | "error") => {
+    setAlertData({ title, message, type });
+    setAlertVisible(true);
+  };
 
   const handleSubmit = async () => {
     try {
@@ -55,11 +72,19 @@ const EditProfileScreen = () => {
         balance: updatedUser.balance ?? userInfo.balance,
       });
   
-      console.log("✅ User updated:", updatedUser);
+      showAlert(
+        t("Success"),
+        t("Profile updated successfully"),
+        "success"
+      );
       setLoading(false);
     } catch (error: any) {
-      console.error("❌ Error updating user:", error);
-      alert(error.response?.data?.error || error.message);
+      showAlert(
+        "שגיאה", // או t("Error") אם אתה רוצה תרגום
+        error.response?.data?.error || error.message,
+        "error"
+      );
+    
       setLoading(false);
     }
   };
@@ -118,6 +143,13 @@ const EditProfileScreen = () => {
           )}
         </TouchableOpacity>
       </View>
+      <CustomAlert
+          visible={alertVisible}
+          title={alertData.title}
+          message={alertData.message}
+          type={alertData.type}
+          onClose={() => setAlertVisible(false)}
+        />
     </SafeAreaView>
   );
 };

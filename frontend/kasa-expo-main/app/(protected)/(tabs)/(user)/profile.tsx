@@ -83,14 +83,14 @@ const ProfileScreen = () => {
             <Text className="text-2xl font-bold text-white">
               {userMonthlySummary?.bottlesCount}
             </Text>
-            <Text className="text-white text-center">Total bottles recycled this month</Text>
+            <Text className="text-white text-center">{t("Total bottles recycled this month")}</Text>
             
           </View>
           <View className="w-[48%] aspect-square bg-green-500 rounded-lg items-center justify-center mb-4">
             <Text className="text-2xl font-bold text-white">
               {userMonthlySummary?.allTimeBottlesCount}
             </Text>
-            <Text className="text-white text-center">Total bottles recycled</Text>
+            <Text className="text-white text-center">{t("Total bottles recycled")}</Text>
           </View>
           <View className="w-full gap-y-4 mt-4">
             <TouchableOpacity

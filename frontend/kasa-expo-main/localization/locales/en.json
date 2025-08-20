@@ -1,6 +1,6 @@
 {
   "Welcome": "Welcome",
-  "Recycied This Mounth": "Recycied This Mounth",
+  "Recycled This Month": "Recycled This Month",
   "Total Earned": "Total Earned",
   "Scan Bottle": "Scan Bottle",
   "Balance": "Balance",
@@ -43,5 +43,10 @@
   "Logout": "Logout",
   "Language": "Language",
   "Hebrew": "Hebrew",
-  "English": "English"
+  "English": "English",
+  "Completed":"Completed",
+  "Failed": "Failed",
+  "Balance this month":"Balance this month",
+  "Total bottles recycled this month":"Total bottles recycled this month",
+  "Total bottles recycled":"Total bottles recycled"
 }

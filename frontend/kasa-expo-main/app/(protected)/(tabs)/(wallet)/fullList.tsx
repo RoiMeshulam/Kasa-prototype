@@ -12,6 +12,17 @@ const FullListScreen = () => {
   const { userSessions } = useGlobalContext();
   const { t, i18n } = useTranslation();
 
+  const filteredSessions = userSessions
+  .filter((session: any) => {
+    const searchLower = value.toLowerCase();
+    return (
+      session.machineName.toLowerCase().includes(searchLower) ||
+      session.status.toLowerCase().includes(searchLower)
+      // אפשר להוסיף עוד שדות אם רוצים לחפש לפי כל דבר
+    );
+  })
+  .slice(0, 5); // אם אתה רוצה להגביל ל־5
+
 
 
   return (
@@ -32,7 +43,7 @@ const FullListScreen = () => {
         borderBottomWidth: 1,
       }}
       className="bg-white rounded-lg"
-      data={userSessions}
+      data={filteredSessions}
       renderItem={({ item }: { item: any }) => {
         const formatted = formatDateTime(item.endedAtISO); // <-- כאן הפורמט לכל פריט
       

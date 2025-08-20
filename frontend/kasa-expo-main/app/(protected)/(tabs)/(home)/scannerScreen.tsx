@@ -9,7 +9,8 @@ import SummaryScreen from './_components/SummaryScreen';
 import ReceiptScreen from './_components/ReceiptScreen';
 import { useGlobalContext } from '../../../../store/globalContext';
 import type { BottleItem } from './_components/types';
-import { useRouter } from 'expo-router'; 
+import { useRouter } from 'expo-router';
+import CustomAlert from "@/components/ui/CustomAlert";
 
 type Stage = 'scannerQR' | 'scannerBottle' | 'insertBottle' | 'summary' | 'receipt';
 
@@ -28,6 +29,22 @@ export default function ScannerScreen() {
   const { userInfo, setRefreshSessions, setUserInfo } = useGlobalContext();
 
   const router = useRouter();
+
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertData, setAlertData] = useState<{
+    title: string;
+    message: string;
+    type?: "success" | "error";
+  }>({
+    title: "",
+    message: "",
+    type: undefined,
+  });
+
+  const showAlert = (title: string, message: string, type: "success" | "error") => {
+    setAlertData({ title, message, type });
+    setAlertVisible(true);
+  };
   // ---------- socket setup ----------
   useEffect(() => {
     if (!userInfo?.uid) return;
@@ -62,6 +79,12 @@ export default function ScannerScreen() {
       setStage('insertBottle');
     });
 
+    socket.on('bottle_error', ({ message }) => {
+      console.warn('🚨 bottle_error:', message);
+      setLoading(false); // אם היית ב־loading
+      showAlert('שגיאה', message, 'error'); // מציג את ה־CustomAlert
+    });
+
     socket.on('bottle_progress', ({ bottles: serverBottles, balance: serverBalance }) => {
       setBottles(serverBottles);
       setBalance(serverBalance);
@@ -81,10 +104,13 @@ export default function ScannerScreen() {
     if (!userInfo?.uid || loading) return;
     setLoading(true);
     try {
-      console.log({qrId,userInfo});
-      await axios.post(`${API}/api/sessions`, { qrId: qrId, userId: userInfo.uid });
-    } catch (err) {
-      console.error('❌ start session failed', err);
+      await axios.post(`${API}/api/sessions`, { qrId, userId: userInfo.uid });
+      // showAlert("הצלחה", "סשן התחיל בהצלחה!", "success");
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.message || "לא נמצאה מכונה מתאימה. אנא סרקו שוב את הברקוד";
+      showAlert("שגיאה", message, "error");
+    } finally {
       setLoading(false);
     }
   };
@@ -120,7 +146,7 @@ export default function ScannerScreen() {
     try {
       const response = await axios.post(`${API}/api/sessions/${sessionId}/end`);
 
-      console.log({response:response.data});
+      console.log({ response: response.data });
       const data = response.data;
 
       console.log(data.session);
@@ -132,14 +158,14 @@ export default function ScannerScreen() {
         const tempUserInfo = { ...userInfo, balance: newBalance };
         setUserInfo(tempUserInfo); // עדכון גלובלי
       }
-      
-     
+
+
       // אופציונלי: WS fallback
       // socketRef.current?.emit('end_session', { sessionId });
 
       // ✅ ריפרש של sessions & summary
       setRefreshSessions(prev => !prev); // יפעיל useEffect ב־context
-      
+
     } catch (e) {
       console.warn('⚠️ end-session failed', e);
     } finally {
@@ -164,26 +190,46 @@ export default function ScannerScreen() {
   // ---------- render by stage ----------
   if (stage === 'scannerQR')
     return (
-      <GenericScanner
-        key={stage}
-        icon={require('@/assets/images/qr-icon.jpg')}
-        title="סרוק את קוד ה־QR שעל המכונה"
-        scanningType="qr"
-        onScanned={handleQRScan}
-        loading={loading}
-      />
+      <>
+        <GenericScanner
+          key={stage}
+          icon={require('@/assets/images/qr-icon.jpg')}
+          title="סרוק את קוד ה־QR שעל המכונה"
+          scanningType="qr"
+          onScanned={handleQRScan}
+          loading={loading}
+        />
+        {/* Custom Alert */}
+        <CustomAlert
+          visible={alertVisible}
+          title={alertData.title}
+          message={alertData.message}
+          type={alertData.type}
+          onClose={() => setAlertVisible(false)}
+        />
+      </>
     );
 
   if (stage === 'scannerBottle')
     return (
-      <GenericScanner
-        key={stage}
-        icon={require('@/assets/images/bottle-icon.jpg')}
-        title="סרוק את הברקוד שעל הבקבוק"
-        scanningType="barcode"
-        onScanned={handleBottleScan}
-        loading={loading}
-      />
+      <>
+        <GenericScanner
+          key={stage}
+          icon={require('@/assets/images/bottle-icon.jpg')}
+          title="סרוק את הברקוד שעל הבקבוק"
+          scanningType="barcode"
+          onScanned={handleBottleScan}
+          loading={loading}
+        />
+        {/* Custom Alert */}
+        <CustomAlert
+          visible={alertVisible}
+          title={alertData.title}
+          message={alertData.message}
+          type={alertData.type}
+          onClose={() => setAlertVisible(false)}
+        />
+      </>
     );
 
   if (stage === 'insertBottle') {

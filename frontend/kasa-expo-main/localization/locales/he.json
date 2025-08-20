@@ -1,6 +1,6 @@
 {
   "Welcome": "ברוך הבא",
-  "Recycied This Mounth": "מוחזרו החודש",
+  "Recycled This Month": "מוחזרו החודש",
   "Total Earned": "רווח כולל",
   "Scan Bottle": "סרוק בקבוק",
   "Balance": "היתרה שלך",
@@ -43,5 +43,11 @@
   "Logout": "יציאה",
   "Language": "שפה",
   "Hebrew": "עברית",
-  "English": "אנגלית"
+  "English": "אנגלית",
+  "Completed": "בוצע",
+  "Failed":"נכשל",
+  "Balance this month": "מאזן חודשי",
+  "Total bottles recycled this month": "סה״כ בקבוקים שמוחזרו החודש",
+  "Total bottles recycled": "סה״כ בקבוקים מוחזרו"
+
 }

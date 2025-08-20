@@ -85,7 +85,11 @@ const initWebSocket = (server) => {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
         });
-        if (!resp.ok) return;
+        if (!resp.ok) {
+          const uSock = userSockets.get(session.userId);
+          if (uSock) io.to(uSock).emit('bottle_error', { message: 'בקבוק לא נמצא במסד הנתונים' });
+          return;
+        }
 
         const bottleData = await resp.json();
         const normalized = {

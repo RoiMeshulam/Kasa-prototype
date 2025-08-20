@@ -40,7 +40,7 @@ const WalletDetailScreen = () => {
           {session.machineName}
         </Text>
         <View className="flex items-center gap-3 mb-10">
-          <Text className="font-thin">{t("Accumulated")}</Text>
+          <Text className="font-thin">{t("Balance")}</Text>
           <Text className="text-6xl font-bold">
           {session.balance ? Number(session.balance).toFixed(2) : "0.00"}
             </Text>
@@ -51,7 +51,7 @@ const WalletDetailScreen = () => {
         <View className="mx-8 gap-y-4">
           <View className="flex-row justify-between">
             <Text>{t("Status")}</Text>
-            <Text>{session.status}</Text>
+            {session.status == "closed" ? <Text>{t("Completed")}</Text> :<Text>{t("Failed")}</Text> }
           </View>
           <View className="flex-row justify-between">
             <Text>{t("Date")}</Text>
