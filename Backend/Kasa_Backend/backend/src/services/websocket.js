@@ -27,14 +27,16 @@ const initWebSocket = (server) => {
   io.on('connection', (socket) => {
     console.log('✅ Socket connected:', socket.id);
 
-    socket.on('machine_connected', (qrId) => {
-      machineSockets.set(qrId, socket.id);
-      console.log(`🤖 Machine ${qrId} connected`);
+    socket.on('machine_connected', (machineId) => {
+      machineSockets.set(machineId, socket.id);
+      console.log(`🤖 Machine ${machineId} connected`);
+      console.log(socket.id);
     });
 
     socket.on('user_connected', (userId) => {
       userSockets.set(userId, socket.id);
       console.log(`📱 User ${userId} connected`);
+      console.log(socket.id);
     });
 
     socket.on('start_session', ({ sessionId, machineId, userId }) => {
@@ -53,6 +55,10 @@ const initWebSocket = (server) => {
 
       const uSock = userSockets.get(userId);
       const mSock = machineSockets.get(machineId);
+      console.log(machineId);
+      console.log({uSock,mSock});
+      console.log({machineSockets:machineSockets});
+
       if (uSock) io.to(uSock).emit('session_started', { sessionId, machineId });
       if (mSock) io.to(mSock).emit('session_started', { sessionId, userId });
 
@@ -61,6 +67,7 @@ const initWebSocket = (server) => {
 
     socket.on('bottle_scanned', async ({ sessionId, barcode }) => {
       const session = activeSessions.get(sessionId);
+      console.log({session: session});
       if (!session) return;
 
       if (!session.bottles || !(session.bottles instanceof Map)) session.bottles = new Map();
@@ -100,6 +107,7 @@ const initWebSocket = (server) => {
 
         const uSock = userSockets.get(session.userId);
         const mSock = machineSockets.get(session.machineId);
+        console.log({uSock,mSock});
         const payload = { bottle: normalized };
 
         if (uSock) io.to(uSock).emit('bottle_data', payload);

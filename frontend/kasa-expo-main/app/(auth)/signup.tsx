@@ -21,10 +21,7 @@ import { getServerUrl } from "@/utils/network";
 
 
 const SOCKET_SERVER_URL = getServerUrl(8080);
-// const SOCKET_SERVER_URL = "http://10.0.0.9:8080"; // this is the last one used
 
-// Platform.OS === "android" ? "http://10.0.2.2:8080" : "http://localhost:8080";
-// Platform.OS === "android" ? "http://10.0.0.9:8080" : "http://localhost:8080"; // for emulator expo
 
 const SignUpScreen = () => {
   const [alertVisible, setAlertVisible] = useState(false);

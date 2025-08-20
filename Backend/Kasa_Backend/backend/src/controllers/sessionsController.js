@@ -62,15 +62,9 @@ exports.createSession = async (req, res) => {
     const userSockets = getUserSockets();
     const activeSessions = getActiveSessions();
 
-    const machineSocketId = machineSockets.get(qrId);
-    const userSocketId = userSockets.get(userId);
-    if (!machineSocketId || !userSocketId) {
-      return res.status(400).json({ error: 'User or machine not connected' });
-    }
-
     const machineQuery = await firestoreDb
       .collection('machines')
-      .where('qrId', '==', qrId)
+      .where('qr_id', '==', qrId)
       .limit(1)
       .get();
 
@@ -80,6 +74,24 @@ exports.createSession = async (req, res) => {
     const machineData = machineDoc.data();
     const machineId = machineDoc.id;
     const machineName = machineData.name || qrId;
+
+    const machineSocketId = machineSockets.get(machineId);
+    const userSocketId = userSockets.get(userId);
+
+    console.log('machineId from Firestore:', machineId);
+    console.log('machineSockets keys:', Array.from(machineSockets.keys()));
+    console.log('machineSocketId:', machineSocketId);
+
+
+    if (!machineSocketId || !userSocketId) {
+      return res.status(400).json({ error: 'User or machine not connected' });
+    }
+
+
+
+
+
+    console.log("createSessioninServer", machineId)
 
     const sessionId = `session_${Date.now()}`;
     activeSessions.set(sessionId, {

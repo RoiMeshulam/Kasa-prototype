@@ -3,7 +3,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { Platform } from "react-native";
 import { auth } from "./firebase";
-// import {  useRouter } from "expo-router";  
+import { Router } from "expo-router";
+import { getServerUrl } from "@/utils/network";
 
 // 📌 טיפוס למידע על המשתמש
 interface UserInfo {
@@ -14,11 +15,8 @@ interface UserInfo {
   balance: string | null;
 }
 
-// 📌 כתובת השרת לפי הפלטפורמה (ל־Emulator)
-const SOCKET_SERVER_URL ="http://10.0.0.9:8080"
-  Platform.OS === "android"
-    // ? "http://10.0.0.8:8080"
-    // : "http://localhost:8080";
+const SOCKET_SERVER_URL = getServerUrl(8080);
+console.log(SOCKET_SERVER_URL);
 
 // 📌 הפונקציה הראשית
 export const signInWithEmail = async (
@@ -31,7 +29,7 @@ export const signInWithEmail = async (
     message: string,
     type: "success" | "error"
   ) => void,
-  router: any
+  router: Router
 ): Promise<void> => {
   try {
     if (!email.trim() || !password) {
@@ -74,9 +72,7 @@ export const signInWithEmail = async (
       // 🎯 עדכון סטייט
       setUserInfo(userInfo);
       setIsConnected(true);
-      console.log(router);
-      console.log(userInfo);
-
+      
       showCustomAlert("הצלחה", `ברוך הבא ${name || email}!`, "success");
       router.replace("/(protected)/(tabs)/(home)");
     } catch (error: any) {

@@ -97,10 +97,32 @@ const deleteMachine = async (req, res) => {
   }
 };
 
+const getIdByQr = async (req, res) => {
+  try {
+    const { qrId } = req.params;
+    const machineQuery = await firestoreDb
+      .collection("machines")
+      .where("qr_id", "==", qrId)
+      .limit(1)
+      .get();
+
+    if (machineQuery.empty) return res.status(404).json({ error: "Machine not found" });
+
+    const machineDoc = machineQuery.docs[0];
+    return res.json({ machineId: machineDoc.id, name: machineDoc.data().name });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "internal server error" });
+  }
+};
+
+
 module.exports = {
   getMachines,
   getMachineById,
   createMachine,
   updateMachine,
   deleteMachine,
+  getIdByQr,
+  
 };

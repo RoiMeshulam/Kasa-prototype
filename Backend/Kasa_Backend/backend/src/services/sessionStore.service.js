@@ -48,6 +48,7 @@ function serializeSession(sessionId, session) {
     endedAtMs,
     endedAtISO: toISO(endedAtMs),
     status: 'closed',
+    machineName: session.machineName,
   };
 }
 

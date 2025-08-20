@@ -11,7 +11,7 @@ export const getServerUrl = (port = 8080): string => {
 
   if (!host) {
     // אם אין debuggerHost, fallback למשתנה סביבה או כתובת קבועה
-    host = Platform.OS === "android" ? "10.0.0.9" : "localhost";
+    host =  "10.0.0.9";
   }
 
   return `http://${host}:${port}`;

@@ -12,7 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { updateUser } from "@/services/apiServices";
+import { updateUserProfile } from "@/services/userServices";
 
 const EditProfileScreen = () => {
   const { userInfo, setUserInfo } = useGlobalContext();
@@ -38,20 +38,21 @@ const EditProfileScreen = () => {
         throw new Error("User ID missing");
       }
   
-      // 🔹 שליחת הבקשה לשרת
-      const updatedUser = await updateUser(userInfo.uid, {
+      const updatedUserResponse = await updateUserProfile(userInfo.uid, {
         name: values.name,
         email: values.email,
         phoneNumber: values.phone,
       });
-  
+      
+      // ✅ קח את הנתונים מה־data
+      const updatedUser = updatedUserResponse.data;
       // 🔹 עדכון ה-GlobalContext עם המידע המוחזר מהשרת
       setUserInfo({
-        uid: userInfo.uid,
-        balance: updatedUser.balance, // אם השרת מחזיר balance
+        ...userInfo,
         name: updatedUser.name,
         email: updatedUser.email,
         phoneNumber: updatedUser.phoneNumber,
+        balance: updatedUser.balance ?? userInfo.balance,
       });
   
       console.log("✅ User updated:", updatedUser);

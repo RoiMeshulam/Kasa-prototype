@@ -13,7 +13,7 @@ import { useRouter } from 'expo-router';
 
 type Stage = 'scannerQR' | 'scannerBottle' | 'insertBottle' | 'summary' | 'receipt';
 
-const API = 'http://10.0.0.8:8080';
+const API = 'http://10.0.0.9:8080';
 
 export default function ScannerScreen() {
   const [stage, setStage] = useState<Stage>('scannerQR');
@@ -25,7 +25,7 @@ export default function ScannerScreen() {
   const [currentBottleId, setCurrentBottleId] = useState<string | null>(null);
 
   const socketRef = useRef<Socket | null>(null);
-  const { userInfo } = useGlobalContext();
+  const { userInfo, setRefreshSessions, setUserInfo } = useGlobalContext();
 
   const router = useRouter();
   // ---------- socket setup ----------
@@ -81,7 +81,8 @@ export default function ScannerScreen() {
     if (!userInfo?.uid || loading) return;
     setLoading(true);
     try {
-      await axios.post(`${API}/api/sessions`, { qrId, userId: userInfo.uid });
+      console.log({qrId,userInfo});
+      await axios.post(`${API}/api/sessions`, { qrId: qrId, userId: userInfo.uid });
     } catch (err) {
       console.error('❌ start session failed', err);
       setLoading(false);
@@ -117,19 +118,33 @@ export default function ScannerScreen() {
     if (!sessionId) return;
     setLoading(true);
     try {
-      // ✅ סגור סשן ב-REST: ישמור ל-RTDB ויעדכן balance למשתמש
-      await axios.post(`${API}/api/sessions/${sessionId}/end`);
-      // אופציונלי כגיבוי (אם WS חשוב לך): 
+      const response = await axios.post(`${API}/api/sessions/${sessionId}/end`);
+
+      console.log({response:response.data});
+      const data = response.data;
+
+      console.log(data.session);
+      let session = data.session;
+
+      // עדכון מאזן המשתמש בצורה בטוחה עם temp variable
+      if (userInfo) {
+        const newBalance = (Number(userInfo.balance) + session.balance).toFixed(2); // סה"כ חדש
+        const tempUserInfo = { ...userInfo, balance: newBalance };
+        setUserInfo(tempUserInfo); // עדכון גלובלי
+      }
+      
+     
+      // אופציונלי: WS fallback
       // socketRef.current?.emit('end_session', { sessionId });
+
+      // ✅ ריפרש של sessions & summary
+      setRefreshSessions(prev => !prev); // יפעיל useEffect ב־context
+      
     } catch (e) {
-      console.warn('⚠️ end-session via REST failed, falling back to WS', e);
-      // גיבוי: WS
-      socketRef.current?.emit('end_session', { sessionId });
+      console.warn('⚠️ end-session failed', e);
     } finally {
       setLoading(false);
-      // רוב הסיכויים שתעבור ל-receipt דרך אירוע 'session_closed',
-      // אבל נשים גם fallback:
-      setStage('receipt');
+      setStage('receipt'); // מעבר למסך קבלה
     }
   };
 

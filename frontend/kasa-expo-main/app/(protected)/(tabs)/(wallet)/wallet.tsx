@@ -18,7 +18,7 @@ import { useTranslation } from "react-i18next";
 export default function WalletScreen() {
   const [value, setValue] = useState("");
   const router = useRouter();
-  const { userInfo, userSessions, machines } = useGlobalContext();
+  const { userInfo, userSessions } = useGlobalContext();
   const { t, i18n } = useTranslation();
 
 

@@ -71,13 +71,13 @@ const ProfileScreen = () => {
             <Text className="text-2xl font-bold text-white">
               {userInfo?.balance}
             </Text>
-            <Text className="text-white text-center">Balance</Text>
+            <Text className="text-white text-center">{t("Balance")}</Text>
           </View>
           <View className="w-[48%] aspect-square bg-green-500 rounded-lg items-center justify-center mb-4">
             <Text className="text-2xl font-bold text-white">
               {userMonthlySummary?.totalBalance}
             </Text>
-            <Text className="text-white text-center">Balance this month</Text>
+            <Text className="text-white text-center">{t("Balance this month")}</Text>
           </View>
           <View className="w-[48%] aspect-square bg-green-500 rounded-lg items-center justify-center mb-4">
             <Text className="text-2xl font-bold text-white">

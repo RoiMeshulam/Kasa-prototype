@@ -9,10 +9,8 @@ import {
 import React from "react";
 import { Link, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { bottles_detailed } from "@/utils/DUMMY_DATA";
 import { DetailList } from "@/components/detail-list";
 import { useTranslation } from "react-i18next";
-import { useGlobalContext } from "@/store/globalContext";
 import { formatDateTime } from "@/utils/formatDate";
 
 const WalletDetailScreen = () => {
@@ -43,7 +41,9 @@ const WalletDetailScreen = () => {
         </Text>
         <View className="flex items-center gap-3 mb-10">
           <Text className="font-thin">{t("Accumulated")}</Text>
-          <Text className="text-6xl font-bold">138.30</Text>
+          <Text className="text-6xl font-bold">
+          {session.balance ? Number(session.balance).toFixed(2) : "0.00"}
+            </Text>
         </View>
 
         <DetailList data={session.bottles ? Object.values(session.bottles) : []} text={`${t("Details")}:`} count={session.bottles ? Object.keys(session.bottles).length : 0}/>
