@@ -14,6 +14,7 @@ const {
 let io;
 
 const API_BASE = process.env.SERVER_URL || process.env.INTERNAL_API_BASE || 'http://localhost:8080';
+console.log("API_BASE:", API_BASE);
 const SCAN_COOLDOWN_MS = 1200;
 
 function toBottleArray(session) {
