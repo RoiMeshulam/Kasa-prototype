@@ -15,7 +15,7 @@ interface UserInfo {
   balance: string | null;
 }
 
-const SOCKET_SERVER_URL = getServerUrl(8080);
+const SOCKET_SERVER_URL = getServerUrl();
 console.log(SOCKET_SERVER_URL);
 
 // 📌 הפונקציה הראשית

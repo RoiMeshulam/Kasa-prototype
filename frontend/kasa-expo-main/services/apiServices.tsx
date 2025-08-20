@@ -3,7 +3,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getServerUrl } from "@/utils/network";
 
-const SOCKET_SERVER_URL = getServerUrl(8080); // Base URL לכל ה־API
+const SOCKET_SERVER_URL = getServerUrl(); // Base URL לכל ה־API
 
 const api = axios.create({
   baseURL: SOCKET_SERVER_URL,

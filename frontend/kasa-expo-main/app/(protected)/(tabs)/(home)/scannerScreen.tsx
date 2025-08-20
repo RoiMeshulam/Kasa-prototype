@@ -11,10 +11,11 @@ import { useGlobalContext } from '../../../../store/globalContext';
 import type { BottleItem } from './_components/types';
 import { useRouter } from 'expo-router';
 import CustomAlert from "@/components/ui/CustomAlert";
+import { getServerUrl } from '@/utils/network';
 
 type Stage = 'scannerQR' | 'scannerBottle' | 'insertBottle' | 'summary' | 'receipt';
 
-const API = 'http://10.0.0.9:8080';
+const API = getServerUrl();
 
 export default function ScannerScreen() {
   const [stage, setStage] = useState<Stage>('scannerQR');
