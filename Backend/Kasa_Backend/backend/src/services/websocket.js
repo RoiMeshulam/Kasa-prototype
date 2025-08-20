@@ -1,6 +1,7 @@
 // backend/src/services/websocket.js
 const { Server } = require('socket.io');
 const { persistAndCloseSession } = require('./sessionStore.service');
+const axios = require('axios');
 
 // ✅ לייבא את המפות מהסינגלטון
 const {
@@ -81,17 +82,11 @@ const initWebSocket = (server) => {
       console.log(`📤 Bottle scanned on session ${sessionId} with barcode ${barcode}`);
 
       try {
-        const resp = await fetch(`${API_BASE}/api/bottles/${encodeURIComponent(String(barcode))}`, {
-          method: 'GET',
+        const resp = await axios.get(`${API_BASE}/api/bottles/${encodeURIComponent(String(barcode))}`, {
           headers: { 'Content-Type': 'application/json' },
         });
-        if (!resp.ok) {
-          const uSock = userSockets.get(session.userId);
-          if (uSock) io.to(uSock).emit('bottle_error', { message: 'בקבוק לא נמצא במסד הנתונים' });
-          return;
-        }
-
-        const bottleData = await resp.json();
+        
+        const bottleData = resp.data;
         const normalized = {
           id: bottleData.id || String(barcode),
           name: bottleData.name ?? 'לא ידוע',
@@ -120,6 +115,13 @@ const initWebSocket = (server) => {
         console.log(`📬 Bottle ready -> ${normalized.name} (${normalized.id})`);
       } catch (err) {
         console.error('❌ Failed to fetch bottle data:', err);
+        const uSock = userSockets.get(session.userId);
+        if (uSock) {
+          const errorMessage = err.response?.status === 404 
+            ? 'בקבוק לא נמצא במסד הנתונים' 
+            : 'שגיאה בטעינת נתוני הבקבוק';
+          io.to(uSock).emit('bottle_error', { message: errorMessage });
+        }
       }
     });
 
