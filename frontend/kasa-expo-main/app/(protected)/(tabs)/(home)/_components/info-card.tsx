@@ -18,17 +18,18 @@ const InfoCard = ({ amount, title, money = false }: InfoCardProps) => {
       // className="flex-1 bg-white py-2 px-3 rounded-lg justify-center items-center gap-2 w-full"
     >
       <View
-        className={`${i18n.language === "he" ? "flex-row-reverse" : "flex-row"} gap-x-1 items-end`}
+        className={`flex-row gap-x-1 items-end`}
       >
         <Text className="text-6xl font-bold">{amount}</Text>
         <Text
           className={`text-2xl font-bold ${money ? "text-green-600" : "text-blue-400"} mb-1`}
         >
-          {money ? "$" : t("Bottels")}
+          {money ? "₪" : t("Bottels")}
         </Text>
       </View>
       <Text className="text-lg text-center">{title}</Text>
     </View>
+    
   );
 };
 

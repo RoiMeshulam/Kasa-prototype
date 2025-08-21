@@ -92,7 +92,7 @@ const EditProfileScreen = () => {
   return (
     <SafeAreaView className="mx-4">
       <Text
-        className={`text-xl font-bold text-start my-8 text-black ${i18n.language === "he" && "self-end"}`}
+        className={`text-xl font-bold text-start my-8 text-black`}
       >
         {t("Edit your user details")}
       </Text>

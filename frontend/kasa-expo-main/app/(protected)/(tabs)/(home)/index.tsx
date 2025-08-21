@@ -29,7 +29,7 @@ export default function HomeScreen() {
           </Text>
 
           <View
-            className={`${i18n.language === "he" ? "flex-row-reverse" : "flex-row"} gap-x-2 shadow-sm`}
+            className={`flex-row gap-x-2 shadow-sm`}
           >
             <Text className="text-3xl text-green-600 font-light mb-3">{`${t("Welcome")},`}</Text>
             <Text className="text-3xl text-black/90 font-extralight mb-3">{`${userInfo?.name}`}</Text>

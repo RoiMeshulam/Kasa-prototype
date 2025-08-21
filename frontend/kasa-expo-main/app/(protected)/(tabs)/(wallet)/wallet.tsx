@@ -42,7 +42,7 @@ export default function WalletScreen() {
       <View className="flex items-center gap-3 mb-12">
         <Text className="font-thin">{t("Balance")}</Text>
         <View className="flex-row items-end">
-          <Text className="text-lg text-green-600">$</Text>
+          <Text className="text-lg text-green-600">₪</Text>
           <Text className="text-6xl font-bold">
             {Number(userInfo?.balance).toFixed(2)}
           </Text>
@@ -88,10 +88,9 @@ export default function WalletScreen() {
               asChild
             >
               <Pressable
-                className={`px-4 py-2 border-b border-gray-100 ${i18n.language === "he" ? "flex-row-reverse" : "flex-row"
-                  }`}
+                className={`px-4 py-2 border-b border-gray-100 flex-row`}
               >
-                <View className={`flex-grow ${i18n.language === "he" && "items-end"}`}>
+                <View className={`flex-grow`}>
                   <Text className="font-semibold text-xl">{item.machineName}</Text>
                   <View className="flex-row text-base text-gray-300">
                     <Text>{new Date(item.endedAtISO).toLocaleDateString()}</Text>

@@ -9,6 +9,7 @@ import {
   Alert,
   Platform,
   ActivityIndicator,
+  ScrollView,
 } from "react-native";
 import CustomAlert from "@/components/ui/CustomAlert";
 import axios from "axios";
@@ -86,7 +87,7 @@ const SignUpScreen = () => {
   };
 
   return (
-    <View className="flex-1 bg-gray-200 p-6">
+    <ScrollView className="flex-1 bg-gray-200 p-6">
       {/* 🔔 Custom Alert Modal */}
       <CustomAlert
         visible={alertVisible}
@@ -108,7 +109,7 @@ const SignUpScreen = () => {
         </View>
 
         <Text
-          className={`text-xl font-bold mb-4 text-black ${i18n.language === "he" && "self-end"}`}
+          className={`text-xl font-bold mb-4 text-black`}
         >
           {t("Create your account")}
         </Text>
@@ -180,7 +181,7 @@ const SignUpScreen = () => {
         </View>
 
         <View
-          className={`${i18n.language === "he" ? "flex-row-reverse" : "flex-row"} justify-center items-center mt-6 gap-2`}
+          className={`"flex-row" justify-center items-center mt-6 gap-2`}
         >
           <Text className="text-gray-600">{t("Have an account?")}</Text>
           <Link href="/(auth)/login">
@@ -190,7 +191,7 @@ const SignUpScreen = () => {
           </Link>
         </View>
       </View>
-    </View>
+    </ScrollView>
   );
 };
 

@@ -39,11 +39,14 @@ const WalletDetailScreen = () => {
         <Text className="font-semibold text-2xl self-center">
           {session.machineName}
         </Text>
-        <View className="flex items-center gap-3 mb-10">
+        <View className="flex items-center gap-3 mb-10 px-4">
           <Text className="font-thin">{t("Balance")}</Text>
-          <Text className="text-6xl font-bold">
-          {session.balance ? Number(session.balance).toFixed(2) : "0.00"}
+          <View className="flex-row items-baseline justify-center w-full">
+            <Text className="text-lg text-green-600">₪</Text>
+            <Text className="text-6xl font-bold flex-shrink-0" numberOfLines={1} adjustsFontSizeToFit={true}>
+              {session.balance ? Number(session.balance).toFixed(2) : "0.00"}
             </Text>
+          </View>
         </View>
 
         <DetailList data={session.bottles ? Object.values(session.bottles) : []} text={`${t("Details")}:`} count={session.bottles ? Object.keys(session.bottles).length : 0}/>

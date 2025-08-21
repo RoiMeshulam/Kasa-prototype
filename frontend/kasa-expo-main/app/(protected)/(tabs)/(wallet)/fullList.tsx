@@ -58,10 +58,10 @@ const FullListScreen = () => {
             asChild
           >
             <Pressable
-              className={`px-4 py-2 border-b border-gray-100 ${i18n.language === "he" ? "flex-row-reverse" : "flex-row"}`}
+              className={`px-4 py-2 border-b border-gray-100 flex-row`}
             >
               <View
-                className={`flex-grow ${i18n.language === "he" && "items-end"}`}
+                className={`flex-grow`}
               >
                 <Text className="font-semibold text-xl">
                   {item.machineName}

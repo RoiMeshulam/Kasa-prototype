@@ -8,7 +8,11 @@ node_modules/
 dist/
 web-build/
 expo-env.d.ts
-.zip
+
+# Android
+android/
+*.apk
+*.aab
 
 # Native
 .kotlin/
@@ -36,5 +40,8 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# Archive files
+*.zip
 
 app-example

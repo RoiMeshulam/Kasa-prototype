@@ -99,7 +99,7 @@ const SignInScreen = () => {
         </View>
 
         <Text
-          className={`text-xl font-bold mb-4 text-black ${i18n.language === "he" && "self-end"}`}
+          className={`text-xl font-bold mb-4 text-black`}
         >
           {t("Login with your account")}
         </Text>
@@ -141,7 +141,7 @@ const SignInScreen = () => {
         </TouchableOpacity>
 
         <View
-          className={`${i18n.language === "he" ? "flex-row-reverse" : "flex-row"} justify-center items-center mt-6 gap-2`}
+          className={`"flex-row" justify-center items-center mt-6 gap-2`}
         >
           <Text className="text-gray-600">{t("Don't have an account?")}</Text>
           <Link href="/(auth)/signup">

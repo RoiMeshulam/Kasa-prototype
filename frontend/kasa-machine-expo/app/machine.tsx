@@ -138,9 +138,7 @@ const MachineScreen = () => {
         </View>
         <Text style={{ marginBottom: 20 }}>Scan this QR Code:</Text>
         <QRCode value={qrId} size={200} />
-        <Link href={"/action"} push asChild style={{ marginTop: 100, fontSize: 24 }}>
-          <Text>Continue</Text>
-        </Link>
+        
       </View>
     );
   }
