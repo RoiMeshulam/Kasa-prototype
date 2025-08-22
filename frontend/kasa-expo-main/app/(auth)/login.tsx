@@ -57,14 +57,22 @@ const SignInScreen = () => {
 
   // 🔄 ניווט אוטומטי אם המשתמש כבר מחובר
   useEffect(() => {
+    console.log("🏠 Login screen useEffect triggered");
+    console.log("🏠 isInitializing:", isInitializing);
+    console.log("🏠 userInfo exists:", !!userInfo);
+    console.log("🏠 isConnected:", isConnected);
+    
     if (!isInitializing && userInfo && isConnected) {
       console.log("🏠 User already logged in, navigating to home");
       router.replace("/(protected)/(tabs)/(home)");
+    } else if (!isInitializing) {
+      console.log("🏠 User not logged in, staying on login screen");
     }
   }, [isInitializing, userInfo, isConnected, router]);
 
   // 📺 הצגת מסך טעינה במהלך הבדיקה הראשונית
   if (isInitializing) {
+    console.log("⏳ Showing loading screen - initializing...");
     return (
       <View className="flex-1 justify-center items-center bg-gray-200">
         <ActivityIndicator size="large" color="#16a34a" />

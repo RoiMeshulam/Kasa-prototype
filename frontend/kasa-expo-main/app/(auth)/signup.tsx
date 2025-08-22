@@ -23,7 +23,7 @@ import { useTranslation } from "react-i18next";
 import i18n from "@/localization/i18n";
 import { getServerUrl } from "@/utils/network";
 
-const SOCKET_SERVER_URL = getServerUrl(8080);
+const SOCKET_SERVER_URL = getServerUrl();
 
 const SignUpScreen = () => {
   const [alertVisible, setAlertVisible] = useState(false);

@@ -52,6 +52,9 @@
         "projectId": "467a750f-95c4-451b-a328-ef82bd2f96d9"
       }
     },
+    "developmentClient": {
+      "silentLaunch": false
+    },
     "plugins": [
       "expo-router",
       [
@@ -91,7 +94,8 @@
             ]
           }
         }
-      ]
+      ],
+      "expo-dev-client"
     ],
     "experiments": {
       "typedRoutes": true

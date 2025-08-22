@@ -5,6 +5,7 @@ import { Platform } from "react-native";
 import { auth } from "./firebase";
 import { Router } from "expo-router";
 import { getServerUrl } from "@/utils/network";
+import log from "@/utils/logger";
 
 // 📌 טיפוס למידע על המשתמש
 interface UserInfo {
@@ -21,19 +22,32 @@ console.log(SOCKET_SERVER_URL);
 // 📌 פונקציית בדיקת טוקן קיים
 export const validateExistingToken = async (): Promise<UserInfo | null> => {
   try {
+    log.debug("🔍 validateExistingToken: Starting validation...");
+    
     const token = await AsyncStorage.getItem("token");
     if (!token) {
-      console.log("🔍 No token found in storage");
+      log.warn("🔍 validateExistingToken: No token found in storage");
       return null;
     }
 
-    console.log("🔍 Validating existing token...");
+    log.debug("🔍 validateExistingToken: Token found, length:", token.length);
+    log.debug("🔍 validateExistingToken: Validating with server...");
+    log.debug("🌐 Server URL:", SOCKET_SERVER_URL);
     
     // שליחת הטוקן לשרת לוולידציה
     const response = await axios.post(
       `${SOCKET_SERVER_URL}/api/users/validate-token`,
-      { token }
+      { token },
+      {
+        timeout: 10000, // 10 seconds timeout
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
     );
+
+    log.info("✅ validateExistingToken: Server response received");
+    log.debug("📊 Response data:", response.data);
 
     const { uid, email, name, phoneNumber, balance } = response.data;
 
@@ -45,13 +59,16 @@ export const validateExistingToken = async (): Promise<UserInfo | null> => {
       balance,
     };
 
-    console.log("✅ Token validation successful");
+    log.info("✅ validateExistingToken: Token validation successful");
     return userInfo;
 
   } catch (error: any) {
-    console.error("❌ Token validation failed:", error);
+    log.error("❌ validateExistingToken: Token validation failed");
+    log.error("❌ Error details:", error?.response?.data || error.message);
+    log.error("❌ Error status:", error?.response?.status);
     
     // מחיקת טוקן לא תקין
+    log.debug("🗑️ Removing invalid token from storage");
     await AsyncStorage.removeItem("token");
     await AsyncStorage.removeItem("userInfo");
     
@@ -78,7 +95,7 @@ export const signInWithEmail = async (
       return;
     }
 
-    console.log("🔐 Signing in with email and password...");
+    log.debug("🔐 Signing in with email and password...");
     const userCredential = await signInWithEmailAndPassword(
       auth,
       email,
@@ -87,14 +104,17 @@ export const signInWithEmail = async (
 
     const user = userCredential.user;
     const token = await user.getIdToken();
-    console.log("✅ Firebase sign-in successful:", user.uid);
+    log.info("✅ Firebase sign-in successful:", user.uid);
 
     // 📡 שליחת הטוקן לשרת לקבלת מידע נוסף
     try {
+      log.debug("📡 Sending token to server...");
       const response = await axios.post(
         `${SOCKET_SERVER_URL}/api/users/signin`,
         { token }
       );
+
+      log.debug("📊 Server response:", response.data);
 
       const { uid, email, name, phoneNumber, balance } = response.data;
 
@@ -117,13 +137,13 @@ export const signInWithEmail = async (
       showCustomAlert("הצלחה", `ברוך הבא ${name || email}!`, "success");
       router.replace("/(protected)/(tabs)/(home)");
     } catch (error: any) {
-      console.error("❌ Server error during sign-in:", error);
+      log.error("❌ Server error during sign-in:", error);
       const msg =
         error?.response?.data?.message || "שגיאה בעת התחברות לשרת. נסה שוב.";
       showCustomAlert("שגיאה", msg, "error");
     }
   } catch (error: any) {
-    console.error("❌ Firebase login error:", error.code, error.message);
+    log.error("❌ Firebase login error:", error.code, error.message);
 
     let errorMessage = "פרטי ההתחברות שגויים או שקרתה תקלה";
 
