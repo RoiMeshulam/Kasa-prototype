@@ -11,6 +11,11 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { updateUserProfile } from "@/services/userServices";
 import CustomAlert from "@/components/ui/CustomAlert";
@@ -90,67 +95,81 @@ const EditProfileScreen = () => {
   };
 
   return (
-    <SafeAreaView className="mx-4">
-      <Text
-        className={`text-xl font-bold text-start my-8 text-black`}
-      >
-        {t("Edit your user details")}
-      </Text>
-
-      <View className="gap-4">
-        <InputField
-          text={t("User name")}
-          autoCapitalize="none"
-          value={values.name}
-          placeholder={t("Enter your username")}
-          placeholderTextColor="#9CA3AF"
-          onChangeText={(v) => handleChange("name", v)}
-          validation={errors.name}
-        />
-        <InputField
-          text={t("Email")}
-          autoCapitalize="none"
-          value={values.email}
-          placeholder={t("Enter your email")}
-          placeholderTextColor="#9CA3AF"
-          onChangeText={(v) => handleChange("email", v)}
-          keyboardType="email-address"
-          validation={errors.email}
-          // style={{textAlign:'right'}}
-        />
-        <InputField
-          text={t("Phone")}
-          autoCapitalize="none"
-          value={values.phone}
-          placeholder={t("Enter your phone number")}
-          placeholderTextColor="#9CA3AF"
-          // style={{textAlign:'right'}}
-          onChangeText={(v) => handleChange("phone", v)}
-          keyboardType="phone-pad"
-          validation={errors.phone}
-        />
-
-        <TouchableOpacity
-          className="w-full bg-transparent p-4 rounded-lg mt-6 border-green-600 border"
-          onPress={handleSubmit}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+          automaticallyAdjustKeyboardInsets
+          contentInsetAdjustmentBehavior="always"
         >
-          {loading ? (
-            <ActivityIndicator size={"small"} color={"#fff"} />
-          ) : (
-            <Text className="text-green-800 text-center font-semibold">
-              {t("Update")}
+          <SafeAreaView className="mx-4">
+            <Text
+              className={`text-xl font-bold text-start my-8 text-black`}
+            >
+              {t("Edit your user details")}
             </Text>
-          )}
-        </TouchableOpacity>
-      </View>
-      <CustomAlert
-          visible={alertVisible}
-          title={alertData.title}
-          message={alertData.message}
-          type={alertData.type}
-          onClose={() => setAlertVisible(false)}
-        />
-    </SafeAreaView>
+
+            <View className="gap-4">
+              <InputField
+                text={t("User name")}
+                autoCapitalize="none"
+                value={values.name}
+                placeholder={t("Enter your username")}
+                placeholderTextColor="#9CA3AF"
+                onChangeText={(v) => handleChange("name", v)}
+                validation={errors.name}
+              />
+              <InputField
+                text={t("Email")}
+                autoCapitalize="none"
+                value={values.email}
+                placeholder={t("Enter your email")}
+                placeholderTextColor="#9CA3AF"
+                onChangeText={(v) => handleChange("email", v)}
+                keyboardType="email-address"
+                validation={errors.email}
+              />
+              <InputField
+                text={t("Phone")}
+                autoCapitalize="none"
+                value={values.phone}
+                placeholder={t("Enter your phone number")}
+                placeholderTextColor="#9CA3AF"
+                onChangeText={(v) => handleChange("phone", v)}
+                keyboardType="phone-pad"
+                validation={errors.phone}
+              />
+
+              <TouchableOpacity
+                className="w-full bg-transparent p-4 rounded-lg mt-6 border-green-600 border"
+                onPress={handleSubmit}
+              >
+                {loading ? (
+                  <ActivityIndicator size={"small"} color={"#fff"} />
+                ) : (
+                  <Text className="text-green-800 text-center font-semibold">
+                    {t("Update")}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+            <CustomAlert
+              visible={alertVisible}
+              title={alertData.title}
+              message={alertData.message}
+              type={alertData.type}
+              onClose={() => setAlertVisible(false)}
+            />
+          </SafeAreaView>
+        </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
 
