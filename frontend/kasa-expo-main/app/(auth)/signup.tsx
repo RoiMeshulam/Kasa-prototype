@@ -14,6 +14,7 @@ import {
   TouchableWithoutFeedback,
   KeyboardAvoidingView,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CustomAlert from "@/components/ui/CustomAlert";
 import axios from "axios";
 import { InputField } from "@/components/ui/InputField";
@@ -29,6 +30,7 @@ const SignUpScreen = () => {
   const [alertVisible, setAlertVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   const { values, errors, handleChange, validate, resetForm } =
     useFormValidation<FormValues>(formSchema, {
@@ -96,10 +98,15 @@ const SignUpScreen = () => {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView
           className="flex-1 bg-gray-200"
-          contentContainerStyle={{ flexGrow: 1, padding: 24 }}
+          contentContainerStyle={{
+            flexGrow: 1,
+            padding: 24,
+            paddingBottom: Math.max(insets.bottom + 20, 40),
+          }}
           keyboardShouldPersistTaps="handled"
           automaticallyAdjustKeyboardInsets
           contentInsetAdjustmentBehavior="always"
+          showsVerticalScrollIndicator={false}
         >
           {/* 🔔 Custom Alert Modal */}
           <CustomAlert
@@ -193,14 +200,14 @@ const SignUpScreen = () => {
               </TouchableOpacity>
             </View>
 
-            <View
-              className={`"flex-row" justify-center items-center mt-6 gap-2`}
-            >
+            <View className="flex-row justify-center items-center mt-8 mb-4">
               <Text className="text-gray-600">{t("Have an account?")}</Text>
-              <Link href="/(auth)/login">
-                <Text className="text-green-800 font-semibold ml-1">
-                  {t("Sign In")}
-                </Text>
+              <Link href="/(auth)/login" asChild>
+                <TouchableOpacity className="ml-2 p-2">
+                  <Text className="text-green-800 font-semibold">
+                    {t("Sign In")}
+                  </Text>
+                </TouchableOpacity>
               </Link>
             </View>
           </View>

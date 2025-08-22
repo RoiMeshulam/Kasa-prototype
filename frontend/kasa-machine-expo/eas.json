@@ -28,6 +28,12 @@
       "env": {
         "EXPO_PUBLIC_BACKEND_URL": "https://backend-393925206417.europe-west1.run.app"
       }
+    },
+    "local": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
     }
   },
   "submit": {

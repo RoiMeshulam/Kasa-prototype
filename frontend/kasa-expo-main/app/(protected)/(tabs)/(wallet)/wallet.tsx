@@ -21,6 +21,8 @@ export default function WalletScreen() {
   const { userInfo, userSessions } = useGlobalContext();
   const { t, i18n } = useTranslation();
 
+  // Get language direction
+  const isRTL = i18n.dir() === 'rtl';
 
   // console.log({ userSessions: userSessions });
 
@@ -90,23 +92,36 @@ export default function WalletScreen() {
               <Pressable
                 className={`px-4 py-2 border-b border-gray-100 flex-row`}
               >
-                <View className={`flex-grow`}>
-                  <Text className="font-semibold text-xl">{item.machineName}</Text>
-                  <View className="flex-row text-base text-gray-300">
+                {isRTL && (
+                  <View
+                    className={`w-8 h-8 flex items-center justify-center rounded-full mr-3 ${item.status === "closed" ? "bg-green-500" : "bg-red-500"
+                      }`}
+                  >
+                    <AntDesign
+                      name={item.status === "closed" ? "check" : "close"}
+                      color={"#fff"}
+                    />
+                  </View>
+                )}
+                <View className={`flex-grow ${isRTL ? 'items-end' : 'items-start'}`}>
+                  <Text className={`font-semibold text-xl ${isRTL ? 'text-right' : 'text-left'}`}>{item.machineName}</Text>
+                  <View className={`flex-row text-base text-gray-300 ${isRTL ? 'flex-row-reverse justify-end' : ''}`}>
                     <Text>{new Date(item.endedAtISO).toLocaleDateString()}</Text>
                     <Text> | </Text> 
                     {item.status == "closed" ? <Text>{t("Completed")}</Text> :<Text>{t("Failed")}</Text> }
                   </View>
                 </View>
-                <View
-                  className={`w-8 h-8 flex items-center justify-center rounded-full ${item.status === "closed" ? "bg-green-500" : "bg-red-500"
-                    }`}
-                >
-                  <AntDesign
-                    name={item.status === "closed" ? "check" : "close"}
-                    color={"#fff"}
-                  />
-                </View>
+                {!isRTL && (
+                  <View
+                    className={`w-8 h-8 flex items-center justify-center rounded-full ml-3 ${item.status === "closed" ? "bg-green-500" : "bg-red-500"
+                      }`}
+                  >
+                    <AntDesign
+                      name={item.status === "closed" ? "check" : "close"}
+                      color={"#fff"}
+                    />
+                  </View>
+                )}
               </Pressable>
             </Link>
           )}
