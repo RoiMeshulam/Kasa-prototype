@@ -49,7 +49,7 @@ interface GlobalContextType {
   userMonthlySummary: UserMonthlySummary | null;
   setUserMonthlySummary: (s: UserMonthlySummary | null) => void;
   setRefreshSessions: React.Dispatch<React.SetStateAction<boolean>>;
-
+  logout: () => void;
 }
 
 const GlobalContext = createContext<GlobalContextType>({} as GlobalContextType);
@@ -124,7 +124,16 @@ export const GlobalProvider = ({ children }: { children: React.ReactNode }) => {
     fetchDynamicData();
   }, [userInfo?.uid, isConnected, refreshSessions]); // ריפרש אחרי כל סשן
 
-
+  // 📌 פונקציית logout שמאפסת את כל הנתונים
+  const logout = () => {
+    setUserInfo(null);
+    setIsConnected(false);
+    setBottles([]);
+    setMachines([]);
+    setUserSessions([]);
+    setUserMonthlySummary(null);
+    setRefreshSessions(false);
+  };
 
   return (
     <GlobalContext.Provider
@@ -140,7 +149,7 @@ export const GlobalProvider = ({ children }: { children: React.ReactNode }) => {
         userMonthlySummary,
         setUserMonthlySummary,
         setRefreshSessions,
-
+        logout,
       }}
     >
       {children}

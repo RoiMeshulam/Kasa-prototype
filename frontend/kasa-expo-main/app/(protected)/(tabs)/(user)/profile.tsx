@@ -14,11 +14,56 @@ import { Entypo } from "@expo/vector-icons";
 import { useGlobalContext } from "@/store/globalContext";
 import { useTranslation } from "react-i18next";
 import { toggleLanguage } from "@/localization/i18n";
+import { signOutUser } from "@/services/firebaseService";
+import { useRouter } from "expo-router";
+import CustomAlert from "@/components/ui/CustomAlert";
 
 const ProfileScreen = () => {
-  const { userInfo, userMonthlySummary } = useGlobalContext();
+  const { userInfo, userMonthlySummary, logout } = useGlobalContext();
   const { t, i18n } = useTranslation();
   const [isTogglingLanguage, setIsTogglingLanguage] = useState(false);
+  const router = useRouter();
+  
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertData, setAlertData] = useState<{
+    title: string;
+    message: string;
+    type: "success" | "error" | undefined;
+  }>({
+    title: "",
+    message: "",
+    type: undefined,
+  });
+
+  const showCustomAlert = (
+    title: string,
+    message: string,
+    type: "success" | "error"
+  ) => {
+    setAlertData({ title, message, type });
+    setAlertVisible(true);
+  };
+
+  const handleLogout = async () => {
+    Alert.alert(
+      t("Logout"),
+      t("Are you sure you want to logout?"),
+      [
+        {
+          text: t("Cancel"),
+          style: "cancel",
+        },
+        {
+          text: t("Logout"),
+          style: "destructive",
+          onPress: async () => {
+            logout();
+            await signOutUser(showCustomAlert, router);
+          },
+        },
+      ]
+    );
+  };
 
   const onToggle = async () => {
     if (isTogglingLanguage) return;
@@ -26,8 +71,6 @@ const ProfileScreen = () => {
     try {
       setIsTogglingLanguage(true);
       await toggleLanguage();
-      // The app will reload automatically if switching to/from Hebrew
-      // For English to English variations, the change will be immediate
     } catch (error) {
       console.error("Error toggling language:", error);
       Alert.alert(t("Error"), t("Failed to change language"));
@@ -39,6 +82,13 @@ const ProfileScreen = () => {
   console.log(userMonthlySummary);
   return (
     <SafeAreaView className="mx-4 gap-y-1 flex">
+      <CustomAlert
+        visible={alertVisible}
+        title={alertData.title}
+        message={alertData.message}
+        type={alertData.type}
+        onClose={() => setAlertVisible(false)}
+      />
       <Header />
       <View className={`bg-white rounded-lg shadow-sm `}>
         <View
@@ -119,9 +169,7 @@ const ProfileScreen = () => {
             </TouchableOpacity>
             <TouchableOpacity
               className="w-full bg-red-500 p-4 rounded-lg"
-              onPress={() => {
-                console.log("Logout");
-              }}
+              onPress={handleLogout}
             >
               <Text className="text-white text-center font-semibold">
                 {t("Logout")}

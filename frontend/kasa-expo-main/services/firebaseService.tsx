@@ -1,4 +1,4 @@
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { Platform } from "react-native";
@@ -99,5 +99,36 @@ export const signInWithEmail = async (
     }
 
     showCustomAlert("שגיאה", errorMessage, "error");
+  }
+};
+
+// 📌 פונקציית התנתקות
+export const signOutUser = async (
+  showCustomAlert: (
+    title: string,
+    message: string,
+    type: "success" | "error"
+  ) => void,
+  router: Router
+): Promise<void> => {
+  try {
+    console.log("🔐 Signing out user...");
+    
+    // 🔥 התנתקות מ-Firebase
+    await signOut(auth);
+    
+    // 🗑️ מחיקת מידע מ-AsyncStorage
+    await AsyncStorage.removeItem("token");
+    await AsyncStorage.removeItem("userInfo");
+    
+    console.log("✅ Logout successful");
+    showCustomAlert("הצלחה", "התנתקת בהצלחה", "success");
+    
+    // 🔄 ניווט לעמוד הלוגין
+    router.replace("/(auth)/login");
+    
+  } catch (error: any) {
+    console.error("❌ Logout error:", error);
+    showCustomAlert("שגיאה", "שגיאה בעת התנתקות. נסה שוב.", "error");
   }
 };
