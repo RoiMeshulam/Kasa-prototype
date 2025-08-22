@@ -18,6 +18,47 @@ interface UserInfo {
 const SOCKET_SERVER_URL = getServerUrl();
 console.log(SOCKET_SERVER_URL);
 
+// 📌 פונקציית בדיקת טוקן קיים
+export const validateExistingToken = async (): Promise<UserInfo | null> => {
+  try {
+    const token = await AsyncStorage.getItem("token");
+    if (!token) {
+      console.log("🔍 No token found in storage");
+      return null;
+    }
+
+    console.log("🔍 Validating existing token...");
+    
+    // שליחת הטוקן לשרת לוולידציה
+    const response = await axios.post(
+      `${SOCKET_SERVER_URL}/api/users/validate-token`,
+      { token }
+    );
+
+    const { uid, email, name, phoneNumber, balance } = response.data;
+
+    const userInfo: UserInfo = {
+      uid,
+      email,
+      name,
+      phoneNumber,
+      balance,
+    };
+
+    console.log("✅ Token validation successful");
+    return userInfo;
+
+  } catch (error: any) {
+    console.error("❌ Token validation failed:", error);
+    
+    // מחיקת טוקן לא תקין
+    await AsyncStorage.removeItem("token");
+    await AsyncStorage.removeItem("userInfo");
+    
+    return null;
+  }
+};
+
 // 📌 הפונקציה הראשית
 export const signInWithEmail = async (
   email: string,

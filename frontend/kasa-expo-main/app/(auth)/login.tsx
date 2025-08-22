@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState, useEffect } from "react";
 import {
   View,
   TextInput,
@@ -26,7 +26,7 @@ import i18n from "@/localization/i18n";
 const SignInScreen = () => {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { setUserInfo, setIsConnected } = useGlobalContext();
+  const { setUserInfo, setIsConnected, isInitializing, userInfo, isConnected } = useGlobalContext();
   const { t } = useTranslation();
 
   const { values, errors, handleChange, validate, resetForm } =
@@ -54,6 +54,24 @@ const SignInScreen = () => {
     setAlertData({ title, message, type });
     setAlertVisible(true);
   };
+
+  // 🔄 ניווט אוטומטי אם המשתמש כבר מחובר
+  useEffect(() => {
+    if (!isInitializing && userInfo && isConnected) {
+      console.log("🏠 User already logged in, navigating to home");
+      router.replace("/(protected)/(tabs)/(home)");
+    }
+  }, [isInitializing, userInfo, isConnected, router]);
+
+  // 📺 הצגת מסך טעינה במהלך הבדיקה הראשונית
+  if (isInitializing) {
+    return (
+      <View className="flex-1 justify-center items-center bg-gray-200">
+        <ActivityIndicator size="large" color="#16a34a" />
+        <Text className="mt-4 text-gray-600">{t("Loading...")}</Text>
+      </View>
+    );
+  }
 
   const handleLogin = async () => {
     try {

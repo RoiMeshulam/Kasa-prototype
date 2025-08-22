@@ -118,6 +118,44 @@ const updateUser = async (req, res) => {
   }
 };
 
-module.exports = { signIn, signUp, updateUser };
+const validateToken = async (req, res) => {
+  const { token } = req.body;
+
+  if (!token) {
+    return res.status(400).json({ error: "Missing authentication token" });
+  }
+
+  try {
+    // 🔹 Verify Firebase Authentication token
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    const uid = decodedToken.uid;
+
+    console.log(`🔑 Token validated for user: ${uid}`);
+
+    // 🔹 Retrieve user data from Firebase Realtime Database
+    const snapshot = await rtdb.ref(`users/${uid}`).once("value");
+    const userData = snapshot.val();
+
+    if (!userData) {
+      console.warn(`⚠️ User not found: ${uid}`);
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // 🔹 Return user data
+    return res.status(200).json({
+      uid,
+      email: userData.email,
+      name: userData.name,
+      phoneNumber: userData.phoneNumber,
+      balance: userData.balance
+    });
+
+  } catch (error) {
+    console.error("❌ Token validation failed:", error);
+    return res.status(401).json({ error: "Invalid or expired token" });
+  }
+};
+
+module.exports = { signIn, signUp, updateUser, validateToken };
 
 
