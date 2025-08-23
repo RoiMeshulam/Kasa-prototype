@@ -64,24 +64,22 @@
 ```mermaid
 flowchart LR
   subgraph Cloud[GCP / Azure]
-    BE[Backend (Node.js + Express)\nREST API\nSocket.IO\nSession memory\nFirebase integrations]
-    FB[(Firebase\nAuth\nRTDB (sessions feed)\nFirestore (profiles/history))]
+    BE[Backend (Node.js + Express)<br/>REST API<br/>Socket.IO<br/>Session memory<br/>Firebase integrations]
+    FB[(Firebase<br/>Auth<br/>RTDB (sessions feed)<br/>Firestore (profiles/history))]
     PG[(PostgreSQL - optional)]
   end
 
-  UA[User App (React Native · Expo)\nScan QR (machine)\nScan barcodes (bottles)\nWallet & history]
-  MA[Machine App (React Native · Expo)\nWaits for handshake\nReceives bottle details\nConfirms insertion]
+  UA[User App (React Native · Expo)<br/>Scan QR (machine)<br/>Scan barcodes (bottles)<br/>Wallet & history]
+  MA[Machine App (React Native · Expo)<br/>Waits for handshake<br/>Receives bottle details<br/>Confirms insertion]
 
   UA -- HTTPS (REST) --> BE
   BE -- HTTPS (REST) --> UA
 
-  MA <--> BE:::ws
-  UA <--> BE:::ws
+  MA <-- WebSocket --> BE
+  UA <-- WebSocket --> BE
 
   BE <--> FB
   BE <--> PG
-
-  classDef ws stroke-dasharray:4 3;
 ```
 
 ---
