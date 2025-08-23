@@ -5,27 +5,27 @@
 ---
 
 ## 📌 Table of Contents
-- [Overview](#-overview)
-- [Features](#-features)
-- [Technologies Used](#-technologies-used)
-- [Architecture](#-architecture)
-- [Data Model](#-data-model)
-- [API Examples](#-api-examples)
-- [Installation](#-installation)
-- [Environment Variables](#-environment-variables)
-- [Usage](#-usage)
-- [Repositories](#-repositories)
-- [Roadmap](#-roadmap)
-- [License](#-license)
+- [Overview](#overview)
+- [Features](#features)
+- [Technologies Used](#technologies-used)
+- [Architecture](#architecture)
+- [Data Model](#data-model)
+- [API Examples](#api-examples)
+- [Installation](#installation)
+- [Environment Variables](#environment-variables)
+- [Usage](#usage)
+- [Repositories](#repositories)
+- [Roadmap](#roadmap)
+- [License](#license)
 
 ---
 
 ## 📌 Overview
 
 **Kasa** is a smart recycling platform:
-- Users scan a **machine QR** to open a session, scan bottle **barcodes**, insert bottles, and watch their **wallet** update in real time.
-- Machines receive session updates and confirm insertions.
-- Backend orchestrates **sessions**, balances, and **real-time** communication.
+- Users scan a **machine QR** to open a session, scan bottle **barcodes**, insert bottles, and watch their **wallet** update in real time.  
+- Machines receive session updates and confirm insertions.  
+- Backend orchestrates **sessions**, balances, and **real-time** communication.  
 
 ---
 
@@ -64,13 +64,13 @@
 ```mermaid
 flowchart LR
   subgraph Cloud[GCP / Azure]
-    BE[Backend (Node.js + Express)\n• REST API\n• Socket.IO\n• Session memory\n• Firebase integrations]
-    FB[(Firebase\n• Auth\n• RTDB (sessions feed)\n• Firestore (profiles/history))]
+    BE[Backend (Node.js + Express)\nREST API\nSocket.IO\nSession memory\nFirebase integrations]
+    FB[(Firebase\nAuth\nRTDB (sessions feed)\nFirestore (profiles/history))]
     PG[(PostgreSQL - optional)]
   end
 
-  UA[User App (React Native · Expo)\n• Scan QR (machine)\n• Scan barcodes (bottles)\n• Wallet & history]
-  MA[Machine App (React Native · Expo)\n• Waits for handshake\n• Receives bottle details\n• Confirms insertion]
+  UA[User App (React Native · Expo)\nScan QR (machine)\nScan barcodes (bottles)\nWallet & history]
+  MA[Machine App (React Native · Expo)\nWaits for handshake\nReceives bottle details\nConfirms insertion]
 
   UA -- HTTPS (REST) --> BE
   BE -- HTTPS (REST) --> UA
@@ -81,4 +81,186 @@ flowchart LR
   BE <--> FB
   BE <--> PG
 
-  classDef ws stroke-dasharray: 4 3;
+  classDef ws stroke-dasharray:4 3;
+```
+
+---
+
+## 📦 Data Model
+
+**Session**
+```json
+{
+  "sessionId": "uuid",
+  "machineId": "machine-123",
+  "userId": "user-abc",
+  "status": "active | closed",
+  "bottles": {
+    "ID123": { "id": "ID123", "name": "Coke 500ml", "price": 0.25, "quantity": 2 }
+  },
+  "balance": 1.5,
+  "startedAtISO": "2025-08-01T12:34:56.000Z",
+  "endedAtISO": null
+}
+```
+
+**User**
+```json
+{
+  "uid": "user-abc",
+  "email": "user@example.com",
+  "displayName": "Roi",
+  "role": "user | admin",
+  "wallet": 27.75
+}
+```
+
+**Machine**
+```json
+{
+  "id": "machine-123",
+  "name": "Kasa TLV #1",
+  "location": { "lat": 32.07, "lng": 34.78 }
+}
+```
+
+---
+
+## 🔌 API Examples
+
+**Start session (QR handshake)**
+```http
+POST /api/sessions/start
+Content-Type: application/json
+
+{ "machineId": "machine-123" }
+```
+_Response_
+```json
+{ "sessionId": "uuid", "status": "active" }
+```
+
+**Scan bottle**
+```http
+POST /api/sessions/:sessionId/bottles
+Content-Type: application/json
+
+{ "barcode": "7290001234567" }
+```
+_Response_
+```json
+{
+  "added": { "id": "ID123", "name": "Coke 500ml", "price": 0.25, "quantity": 1 },
+  "balance": 0.25
+}
+```
+
+**End session**
+```http
+POST /api/sessions/:sessionId/end
+```
+_Response_
+```json
+{ "sessionId": "uuid", "status": "closed", "total": 1.5 }
+```
+
+**User history**
+```http
+GET /api/users/me/sessions?limit=20
+```
+
+---
+
+## ⚙️ Installation
+
+### Backend
+```bash
+git clone <backend-repo-url>
+cd backend
+npm install
+# create .env (see below)
+npm run dev   # or: npm start
+```
+
+### User App (Expo)
+```bash
+git clone <user-app-repo-url>
+cd kasa-user-app
+npm install
+npx expo start
+```
+
+### Machine App (Expo)
+```bash
+git clone <machine-app-repo-url>
+cd kasa-machine-app
+npm install
+npx expo start
+```
+
+---
+
+## 🔐 Environment Variables
+
+**Backend** (`.env`)
+```
+NODE_ENV=production
+PORT=8080
+SERVER_URL=https://<public-server-url>
+INTERNAL_API_BASE=http://localhost:8080
+
+# Firebase
+FIREBASE_PROJECT_ID=<id>
+FIREBASE_CLIENT_EMAIL=<svc-account@project.iam.gserviceaccount.com>
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+
+# Optional DB
+DATABASE_URL=postgres://user:pass@host:5432/kasa
+JWT_SECRET=<random-strong-secret>
+```
+
+**Mobile apps** (`app.config.js` / `.env`)
+```
+EXPO_PUBLIC_API_BASE=https://<public-server-url>
+EXPO_PUBLIC_WS_BASE=wss://<public-server-url>
+```
+
+---
+
+## ▶️ Usage
+
+### User App
+- Scan **machine QR** → session opens  
+- Scan **bottle barcode** → item appears with value  
+- Insert bottle → machine confirms → **wallet** updates  
+- End session → summary screen  
+
+### Machine App
+- Waits for **handshake**  
+- Displays **bottles list** and **status**  
+- Confirms insertions  
+- Closes session on user finish  
+
+---
+
+## 📂 Repositories
+
+- **Backend (Node.js + Express + Socket.IO + Firebase)** → `<link-here>`  
+- **User App (React Native · Expo)** → `<link-here>`  
+- **Machine App (React Native · Expo)** → `<link-here>`  
+
+---
+
+## 🗺 Roadmap
+
+- Admin panel (machines management, reports)  
+- Push notifications (FCM)  
+- Back-office bottle catalog & pricing sync  
+- Export reports (CSV)  
+- Monitoring & alerts (health checks)  
+
+---
+
+## 📄 License
+
+MIT © 2025 Roi Meshulam
