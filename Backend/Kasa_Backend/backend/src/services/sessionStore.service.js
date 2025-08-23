@@ -48,6 +48,7 @@ function serializeSession(sessionId, session) {
     endedAtMs,
     endedAtISO: toISO(endedAtMs),
     status: 'closed',
+    machineName: session.machineName,
   };
 }
 
@@ -128,6 +129,9 @@ async function listSessionsByUser(userId, { fromMs, toMs, limit = 200, sortDesc 
  *  - סה״כ מאזן חודשי (sum balance)
  *  - מחזיר גם fromMs/toMs לחודש הזה
  */
+
+
+
 async function monthlySummaryByUser(userId, { year, month /*1..12*/ } = {}) {
   const now = new Date();
   const y = year || now.getUTCFullYear();

@@ -1,18 +1,22 @@
 // services/apiService.ts
 import axios from "axios";
-import { Platform } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getServerUrl } from "@/utils/network";
 
-const SOCKET_SERVER_URL ="http://10.0.0.8:8080"
-  // Platform.OS === "android"
-  //   ? "http://10.0.0.9:8080"
-  //   : "http://localhost:8080";
+const SOCKET_SERVER_URL = getServerUrl(); // Base URL לכל ה־API
 
-export const fetchBottles = async () => {
-  const response = await axios.get(`${SOCKET_SERVER_URL}/api/bottles`);
-  return response.data;
-};
+const api = axios.create({
+  baseURL: SOCKET_SERVER_URL,
+  timeout: 10000,
+});
 
-export const fetchMachines = async () => {
-  const response = await axios.get(`${SOCKET_SERVER_URL}/api/machines`);
-  return response.data;
-};
+// Interceptor לטוקן
+api.interceptors.request.use(async (config) => {
+  const token = await AsyncStorage.getItem("token");
+  if (token && config.headers) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export default api;

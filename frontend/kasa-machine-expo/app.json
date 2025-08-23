@@ -1,22 +1,26 @@
 {
   "expo": {
-    "name": "kasa-machine-expo",
+    "name": "Kasa Machine",
     "slug": "kasa-machine-expo",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "kasamachineexpo",
+    "scheme": "kasamachine",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
     "android": {
+      "package": "com.meshulamdev.kasamachine",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "CAMERA"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -37,6 +41,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "119178af-cee1-48ce-803c-bf91ffdb55e5"
+      }
     }
   }
 }

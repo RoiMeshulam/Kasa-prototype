@@ -46,18 +46,29 @@ export const initI18n = async () => {
 };
 
 export const toggleLanguage = async () => {
-  const currentLang = i18n.language;
-  const nextLang = currentLang === "en" ? "he" : "en";
-  await i18n.changeLanguage(nextLang);
-  await AsyncStorage.setItem(LANG_KEY, nextLang);
+  try {
+    const currentLang = i18n.language;
+    const nextLang = currentLang === "en" ? "he" : "en";
+    
+    await i18n.changeLanguage(nextLang);
+    await AsyncStorage.setItem(LANG_KEY, nextLang);
 
-  const isRTL = nextLang === "he";
-  if (I18nManager.isRTL !== isRTL) {
-    I18nManager.forceRTL(isRTL);
-    // await Updates.reloadAsync();
+    const isRTL = nextLang === "he";
+    const needsReload = I18nManager.isRTL !== isRTL;
+    
+    if (needsReload) {
+      I18nManager.forceRTL(isRTL);
+      // Give a small delay to ensure state is saved before reload
+      setTimeout(async () => {
+        await Updates.reloadAsync();
+      }, 100);
+    }
+
+    return nextLang;
+  } catch (error) {
+    console.error('Error in toggleLanguage:', error);
+    throw error;
   }
-
-  return nextLang;
 };
 
 export default i18n;

@@ -8,5 +8,6 @@ router.get("/:machineUID", authenticateToken, machinesController.getMachineById)
 router.post("/", authenticateToken, machinesController.createMachine);
 router.put("/:machineUID", authenticateToken, machinesController.updateMachine);
 router.delete("/:machineUID", authenticateToken, machinesController.deleteMachine);
+router.get("/getIdByQr/:qrId", machinesController.getIdByQr);
 
 module.exports = router;

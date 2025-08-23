@@ -9,11 +9,13 @@ import SummaryScreen from './_components/SummaryScreen';
 import ReceiptScreen from './_components/ReceiptScreen';
 import { useGlobalContext } from '../../../../store/globalContext';
 import type { BottleItem } from './_components/types';
-import { useRouter } from 'expo-router'; 
+import { useRouter } from 'expo-router';
+import CustomAlert from "@/components/ui/CustomAlert";
+import { getServerUrl } from '@/utils/network';
 
 type Stage = 'scannerQR' | 'scannerBottle' | 'insertBottle' | 'summary' | 'receipt';
 
-const API = 'http://10.0.0.8:8080';
+const API = getServerUrl();
 
 export default function ScannerScreen() {
   const [stage, setStage] = useState<Stage>('scannerQR');
@@ -25,9 +27,25 @@ export default function ScannerScreen() {
   const [currentBottleId, setCurrentBottleId] = useState<string | null>(null);
 
   const socketRef = useRef<Socket | null>(null);
-  const { userInfo } = useGlobalContext();
+  const { userInfo, setRefreshSessions, setUserInfo } = useGlobalContext();
 
   const router = useRouter();
+
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertData, setAlertData] = useState<{
+    title: string;
+    message: string;
+    type?: "success" | "error";
+  }>({
+    title: "",
+    message: "",
+    type: undefined,
+  });
+
+  const showAlert = (title: string, message: string, type: "success" | "error") => {
+    setAlertData({ title, message, type });
+    setAlertVisible(true);
+  };
   // ---------- socket setup ----------
   useEffect(() => {
     if (!userInfo?.uid) return;
@@ -62,6 +80,12 @@ export default function ScannerScreen() {
       setStage('insertBottle');
     });
 
+    socket.on('bottle_error', ({ message }) => {
+      console.warn('🚨 bottle_error:', message);
+      setLoading(false); // אם היית ב־loading
+      showAlert('שגיאה', message, 'error'); // מציג את ה־CustomAlert
+    });
+
     socket.on('bottle_progress', ({ bottles: serverBottles, balance: serverBalance }) => {
       setBottles(serverBottles);
       setBalance(serverBalance);
@@ -82,8 +106,12 @@ export default function ScannerScreen() {
     setLoading(true);
     try {
       await axios.post(`${API}/api/sessions`, { qrId, userId: userInfo.uid });
-    } catch (err) {
-      console.error('❌ start session failed', err);
+      // showAlert("הצלחה", "סשן התחיל בהצלחה!", "success");
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.message || "לא נמצאה מכונה מתאימה. אנא סרקו שוב את הברקוד";
+      showAlert("שגיאה", message, "error");
+    } finally {
       setLoading(false);
     }
   };
@@ -117,19 +145,33 @@ export default function ScannerScreen() {
     if (!sessionId) return;
     setLoading(true);
     try {
-      // ✅ סגור סשן ב-REST: ישמור ל-RTDB ויעדכן balance למשתמש
-      await axios.post(`${API}/api/sessions/${sessionId}/end`);
-      // אופציונלי כגיבוי (אם WS חשוב לך): 
+      const response = await axios.post(`${API}/api/sessions/${sessionId}/end`);
+
+      console.log({ response: response.data });
+      const data = response.data;
+
+      console.log(data.session);
+      let session = data.session;
+
+      // עדכון מאזן המשתמש בצורה בטוחה עם temp variable
+      if (userInfo) {
+        const newBalance = (Number(userInfo.balance) + session.balance).toFixed(2); // סה"כ חדש
+        const tempUserInfo = { ...userInfo, balance: newBalance };
+        setUserInfo(tempUserInfo); // עדכון גלובלי
+      }
+
+
+      // אופציונלי: WS fallback
       // socketRef.current?.emit('end_session', { sessionId });
+
+      // ✅ ריפרש של sessions & summary
+      setRefreshSessions(prev => !prev); // יפעיל useEffect ב־context
+
     } catch (e) {
-      console.warn('⚠️ end-session via REST failed, falling back to WS', e);
-      // גיבוי: WS
-      socketRef.current?.emit('end_session', { sessionId });
+      console.warn('⚠️ end-session failed', e);
     } finally {
       setLoading(false);
-      // רוב הסיכויים שתעבור ל-receipt דרך אירוע 'session_closed',
-      // אבל נשים גם fallback:
-      setStage('receipt');
+      setStage('receipt'); // מעבר למסך קבלה
     }
   };
 
@@ -149,26 +191,46 @@ export default function ScannerScreen() {
   // ---------- render by stage ----------
   if (stage === 'scannerQR')
     return (
-      <GenericScanner
-        key={stage}
-        icon={require('@/assets/images/qr-icon.jpg')}
-        title="סרוק את קוד ה־QR שעל המכונה"
-        scanningType="qr"
-        onScanned={handleQRScan}
-        loading={loading}
-      />
+      <>
+        <GenericScanner
+          key={stage}
+          icon={require('@/assets/images/qr-icon.jpg')}
+          title="סרוק את קוד ה־QR שעל המכונה"
+          scanningType="qr"
+          onScanned={handleQRScan}
+          loading={loading}
+        />
+        {/* Custom Alert */}
+        <CustomAlert
+          visible={alertVisible}
+          title={alertData.title}
+          message={alertData.message}
+          type={alertData.type}
+          onClose={() => setAlertVisible(false)}
+        />
+      </>
     );
 
   if (stage === 'scannerBottle')
     return (
-      <GenericScanner
-        key={stage}
-        icon={require('@/assets/images/bottle-icon.jpg')}
-        title="סרוק את הברקוד שעל הבקבוק"
-        scanningType="barcode"
-        onScanned={handleBottleScan}
-        loading={loading}
-      />
+      <>
+        <GenericScanner
+          key={stage}
+          icon={require('@/assets/images/bottle-icon.jpg')}
+          title="סרוק את הברקוד שעל הבקבוק"
+          scanningType="barcode"
+          onScanned={handleBottleScan}
+          loading={loading}
+        />
+        {/* Custom Alert */}
+        <CustomAlert
+          visible={alertVisible}
+          title={alertData.title}
+          message={alertData.message}
+          type={alertData.type}
+          onClose={() => setAlertVisible(false)}
+        />
+      </>
     );
 
   if (stage === 'insertBottle') {

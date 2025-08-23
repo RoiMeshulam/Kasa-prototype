@@ -1,6 +1,7 @@
 // backend/src/services/websocket.js
 const { Server } = require('socket.io');
 const { persistAndCloseSession } = require('./sessionStore.service');
+const axios = require('axios');
 
 // ✅ לייבא את המפות מהסינגלטון
 const {
@@ -13,6 +14,7 @@ const {
 let io;
 
 const API_BASE = process.env.INTERNAL_API_BASE || 'http://localhost:8080';
+console.log("API_BASE:", API_BASE);
 const SCAN_COOLDOWN_MS = 1200;
 
 function toBottleArray(session) {
@@ -27,14 +29,16 @@ const initWebSocket = (server) => {
   io.on('connection', (socket) => {
     console.log('✅ Socket connected:', socket.id);
 
-    socket.on('machine_connected', (qrId) => {
-      machineSockets.set(qrId, socket.id);
-      console.log(`🤖 Machine ${qrId} connected`);
+    socket.on('machine_connected', (machineId) => {
+      machineSockets.set(machineId, socket.id);
+      console.log(`🤖 Machine ${machineId} connected`);
+      console.log(socket.id);
     });
 
     socket.on('user_connected', (userId) => {
       userSockets.set(userId, socket.id);
       console.log(`📱 User ${userId} connected`);
+      console.log(socket.id);
     });
 
     socket.on('start_session', ({ sessionId, machineId, userId }) => {
@@ -53,6 +57,10 @@ const initWebSocket = (server) => {
 
       const uSock = userSockets.get(userId);
       const mSock = machineSockets.get(machineId);
+      console.log(machineId);
+      console.log({uSock,mSock});
+      console.log({machineSockets:machineSockets});
+
       if (uSock) io.to(uSock).emit('session_started', { sessionId, machineId });
       if (mSock) io.to(mSock).emit('session_started', { sessionId, userId });
 
@@ -61,6 +69,7 @@ const initWebSocket = (server) => {
 
     socket.on('bottle_scanned', async ({ sessionId, barcode }) => {
       const session = activeSessions.get(sessionId);
+      console.log({session: session});
       if (!session) return;
 
       if (!session.bottles || !(session.bottles instanceof Map)) session.bottles = new Map();
@@ -74,13 +83,11 @@ const initWebSocket = (server) => {
       console.log(`📤 Bottle scanned on session ${sessionId} with barcode ${barcode}`);
 
       try {
-        const resp = await fetch(`${API_BASE}/api/bottles/${encodeURIComponent(String(barcode))}`, {
-          method: 'GET',
+        const resp = await axios.get(`${API_BASE}/api/bottles/${encodeURIComponent(String(barcode))}`, {
           headers: { 'Content-Type': 'application/json' },
         });
-        if (!resp.ok) return;
-
-        const bottleData = await resp.json();
+        
+        const bottleData = resp.data;
         const normalized = {
           id: bottleData.id || String(barcode),
           name: bottleData.name ?? 'לא ידוע',
@@ -100,6 +107,7 @@ const initWebSocket = (server) => {
 
         const uSock = userSockets.get(session.userId);
         const mSock = machineSockets.get(session.machineId);
+        console.log({uSock,mSock});
         const payload = { bottle: normalized };
 
         if (uSock) io.to(uSock).emit('bottle_data', payload);
@@ -108,6 +116,13 @@ const initWebSocket = (server) => {
         console.log(`📬 Bottle ready -> ${normalized.name} (${normalized.id})`);
       } catch (err) {
         console.error('❌ Failed to fetch bottle data:', err);
+        const uSock = userSockets.get(session.userId);
+        if (uSock) {
+          const errorMessage = err.response?.status === 404 
+            ? 'בקבוק לא נמצא במסד הנתונים' 
+            : 'שגיאה בטעינת נתוני הבקבוק';
+          io.to(uSock).emit('bottle_error', { message: errorMessage });
+        }
       }
     });
 

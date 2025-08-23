@@ -8,7 +8,6 @@ import {
 } from "react-native";
 
 import { Link } from "expo-router";
-import { users } from "../../../../utils/DUMMY_DATA";
 import InfoCard from "./_components/info-card";
 import { AntDesign } from "@expo/vector-icons";
 import { useGlobalContext } from "@/store/globalContext";
@@ -17,6 +16,9 @@ import { useTranslation } from "react-i18next";
 export default function HomeScreen() {
   const { userInfo, userMonthlySummary } = useGlobalContext();
   const { t, i18n } = useTranslation();
+
+  console.log({ userMonthlySummary: userMonthlySummary });
+  console.log({ userInfo: userInfo });
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
@@ -27,7 +29,7 @@ export default function HomeScreen() {
           </Text>
 
           <View
-            className={`${i18n.language === "he" ? "flex-row-reverse" : "flex-row"} gap-x-2 shadow-sm`}
+            className={`flex-row gap-x-2 shadow-sm`}
           >
             <Text className="text-3xl text-green-600 font-light mb-3">{`${t("Welcome")},`}</Text>
             <Text className="text-3xl text-black/90 font-extralight mb-3">{`${userInfo?.name}`}</Text>
@@ -37,8 +39,8 @@ export default function HomeScreen() {
             <View className="w-full flex-row flex-nowrap justify-between">
               <View className="w-[48%] aspect-square bg-white rounded-xl items-center justify-center border border-gray-400 ">
                 <InfoCard
-                  amount={users[0]?.bottles_total.toString()}
-                  title={t("Recycied This Mounth")}
+                  amount={(userMonthlySummary?.bottlesCount ?? 0).toString()}
+                  title={t("Recycled This Month")}
                 />
               </View>
               <View className="w-[48%] aspect-square bg-white rounded-xl items-center justify-center border border-gray-400">

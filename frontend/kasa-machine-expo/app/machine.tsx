@@ -4,6 +4,8 @@ import { useLocalSearchParams, useRouter, Link } from "expo-router";
 import { Text, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import { io, Socket } from "socket.io-client";
+import axios from 'axios';
+import { getServerUrl } from "@/utils/network";
 
 type Stage = "show_qr" | "await_bottle" | "insert_now";
 
@@ -14,7 +16,7 @@ type ProgressPayload = {
   balance: number;
 };
 
-const SOCKET_SERVER_URL = "http://10.0.0.8:8080";
+const SOCKET_SERVER_URL = getServerUrl();
 
 const MachineScreen = () => {
   const params = useLocalSearchParams();
@@ -37,14 +39,23 @@ const MachineScreen = () => {
     const socket = io(SOCKET_SERVER_URL, { transports: ["websocket"] });
     socketRef.current = socket;
 
-    const onConnect = () => {
+    const onConnect = async () => {
       console.log("✅ Socket connected as machine:", socket.id);
-      setConnected(true);
-      socket.emit("machine_connected", qrId);
-      setStage("show_qr");
-      setSessionId(null);
-      setCurrentBottle(null);
-      setBalance(0);
+      try {
+        const response = await axios.get(`${SOCKET_SERVER_URL}/api/machines/getIdByQr/${qrId}`);
+        console.log("response:", response.data);
+        const machineId = response.data.machineId;
+        console.log("🖥️ machineId received:", machineId);
+        setConnected(true);
+        socket.emit("machine_connected", machineId);
+      } catch (err) {
+        console.warn("⚠️ Axios failed:", err);
+      } finally {
+        setStage("show_qr");
+        setSessionId(null);
+        setCurrentBottle(null);
+        setBalance(0);
+      }
     };
 
     const onSessionStarted = ({ sessionId, userId }: { sessionId: string; userId: string }) => {
@@ -127,9 +138,7 @@ const MachineScreen = () => {
         </View>
         <Text style={{ marginBottom: 20 }}>Scan this QR Code:</Text>
         <QRCode value={qrId} size={200} />
-        <Link href={"/action"} push asChild style={{ marginTop: 100, fontSize: 24 }}>
-          <Text>Continue</Text>
-        </Link>
+        
       </View>
     );
   }
