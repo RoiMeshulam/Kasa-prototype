@@ -36,7 +36,7 @@
 - **User wallet** with instant balance updates  
 - **Session lifecycle** (open → bottle scans → close + persist)  
 - **History** of sessions and bottles  
-- **Authentication** with **Firebase Auth** (email/password; phone optional)  
+- **Authentication** with **Firebase Auth** (email/password; google optional)  
 - **Cross-platform** apps (Android & iOS) with **Expo**  
 
 ---
@@ -48,12 +48,11 @@
 - **Socket.IO** – WebSocket server (user ↔ machine)  
 - **Firebase Authentication** – secure sign-in (email/phone)  
 - **Firebase Realtime Database / Firestore** – session feed, history & profiles  
-- **(Optional) PostgreSQL** – structured reporting & analytics  
 - **JWT / Sessions** – authenticated API & WS  
 
 ### Mobile Apps
 - **React Native (Expo)**  
-- **expo-barcode-scanner / expo-camera** – QR & barcode  
+- **expo-camera** – QR & barcode  
 - **React Navigation**  
 - **Context API / hooks** – global state (user, sessions, balance)  
 
@@ -67,27 +66,27 @@
 **Session**
 ```json
 {
-  "sessionId": "uuid",
+  "sessionId": "sessionId-123",
   "machineId": "machine-123",
-  "userId": "user-abc",
+  "userId": "user-123",
   "status": "active | closed",
   "bottles": {
-    "ID123": { "id": "ID123", "name": "Coke 500ml", "price": 0.25, "quantity": 2 }
+    "ID123": { "id": "ID123", "name": "Coke 500ml", "price": 0.30, "quantity": 2 }
   },
   "balance": 1.5,
   "startedAtISO": "2025-08-01T12:34:56.000Z",
-  "endedAtISO": null
+  "endedAtISO": "2025-08-01T12:34:58.000Z"
 }
 ```
 
 **User**
 ```json
 {
-  "uid": "user-abc",
+  "uid": "user-123",
   "email": "user@example.com",
-  "displayName": "Roi",
-  "role": "user | admin",
-  "wallet": 27.75
+  "name": "Roi",
+  "phoneNumber": "05020202021",
+  "balance": "123.30"
 }
 ```
 
@@ -96,7 +95,22 @@
 {
   "id": "machine-123",
   "name": "Kasa TLV #1",
-  "location": { "lat": 32.07, "lng": 34.78 }
+  "location": { "lat": 32.07, "lng": 34.78 },
+  "last_maintaince": "2025-06-10",
+  "qr_id":"qr-machine-009-PTK-EmHaMoshavot",
+  "status": "available"
+}
+```
+
+---
+
+**Bottle**
+```json
+{
+  "id": "bottle-123",
+  "name": "קוקה קולה",
+  "price": "0.30",
+  "type": "plastic",
 }
 ```
 
@@ -227,16 +241,7 @@ EXPO_PUBLIC_WS_BASE=wss://<public-server-url>
 
 ---
 
-## 🗺 Roadmap
-
-- Admin panel (machines management, reports)  
-- Push notifications (FCM)  
-- Back-office bottle catalog & pricing sync  
-- Export reports (CSV)  
-- Monitoring & alerts (health checks)  
-
----
 
 ## 📄 License
 
-MIT © 2025 Roi Meshulam
+MIT © 2025 Roi Meshulam , Naor Meshulam
