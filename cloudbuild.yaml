@@ -1,0 +1,17 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'build',
+      '-t', 'gcr.io/$PROJECT_ID/kasa-backend:$BUILD_ID',
+      '-t', 'gcr.io/$PROJECT_ID/kasa-backend:latest',
+      '-f', 'Backend/Kasa_Backend/backend/Dockerfile',
+      '.'
+    ]
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/kasa-backend:$BUILD_ID']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/kasa-backend:latest']
+
+images:
+  - 'gcr.io/$PROJECT_ID/kasa-backend:$BUILD_ID'
+  - 'gcr.io/$PROJECT_ID/kasa-backend:latest'
