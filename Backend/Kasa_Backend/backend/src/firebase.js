@@ -1,9 +1,12 @@
 require('dotenv').config();
 const admin = require('firebase-admin');
-// const path = require('path');
 
 // Load the Firebase service account key from the .env file
 const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
+const environment = process.env.ENVIRONMENT || 'production';
+
+console.log('🔧 Backend Environment:', environment);
+console.log('🔑 Service Account Path:', serviceAccountPath);
 
 // Initialize Firebase Admin SDK with credentials from .env file
 admin.initializeApp({

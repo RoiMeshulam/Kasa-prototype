@@ -17,7 +17,10 @@ interface UserInfo {
 }
 
 const SOCKET_SERVER_URL = getServerUrl();
-console.log(SOCKET_SERVER_URL);
+const ENVIRONMENT = process.env.EXPO_PUBLIC_ENVIRONMENT || 'production';
+
+console.log('🔧 Current Environment:', ENVIRONMENT);
+console.log('🌐 Server URL:', SOCKET_SERVER_URL);
 
 // 📌 פונקציית בדיקת טוקן קיים
 export const validateExistingToken = async (): Promise<UserInfo | null> => {

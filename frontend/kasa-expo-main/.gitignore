@@ -37,6 +37,15 @@ yarn-error.*
 
 # local env files
 .env*.local
+.env
+.env.development
+.env.test
+.env.production
+.env.staging
+
+# Firebase config files
+firebase.config.*.js
+firebase.config.*.ts
 
 # typescript
 *.tsbuildinfo
@@ -45,3 +54,5 @@ yarn-error.*
 *.zip
 
 app-example
+
+

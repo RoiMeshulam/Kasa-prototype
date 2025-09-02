@@ -64,9 +64,22 @@ node_modules/
 
 # dotenv environment variables file
 .env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.staging
 
 # dataconnect generated files
 .dataconnect
 
 moneymonitor-d37db-firebase-adminsdk-w6e6s-0dda1398e7.json
 backend/firebase/*.json
+
+# Firebase service account keys
+*-firebase-adminsdk-*.json
+serviceAccount*.json
+firebase-service-account-*.json
+
+# Additional env files
+.env.*

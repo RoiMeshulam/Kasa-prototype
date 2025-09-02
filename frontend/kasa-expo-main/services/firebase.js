@@ -9,7 +9,8 @@ import { getFirestore } from "firebase/firestore";
 import { getDatabase } from "firebase/database";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const firebaseConfig = {
+// Production Firebase Config
+const productionConfig = {
   apiKey: "AIzaSyAcDvHCI9fnMkdPPA_eFErKN2feVA5kiyc",
   authDomain: "kasa-prototype.firebaseapp.com",
   databaseURL: "https://kasa-prototype-default-rtdb.europe-west1.firebasedatabase.app",
@@ -20,8 +21,37 @@ const firebaseConfig = {
   measurementId: "G-60FGX9FGNQ"
 };
 
-const app = initializeApp(firebaseConfig);
+// Test Firebase Config - You need to replace these with actual test project credentials
+const testConfig = {
+  apiKey: "AIzaSyBfGPnN_Q_5RJByE4HlAjWgJbGClY1yGTY",
+  authDomain: "kasa_test.firebaseapp.com",
+  databaseURL: "https://kasa-test-fe398-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "kasa-test-fe398",
+  storageBucket: "kasa-test-fe398.firebasestorage.app",
+  messagingSenderId: "YOUR_TEST_MESSAGING_SENDER_ID",
+  appId: "1:756418549644:android:28a7db345c89b393e728a9",
+  // measurementId: "YOUR_TEST_MEASUREMENT_ID"
+};
 
+// Determine which config to use based on environment
+const getFirebaseConfig = () => {
+  const environment = process.env.EXPO_PUBLIC_ENVIRONMENT || 'production';
+  console.log('🔧 Firebase Environment:', environment);
+  
+  switch (environment) {
+    case 'test':
+    case 'development':
+      console.log('📱 Using TEST Firebase configuration');
+      return testConfig;
+    case 'production':
+    default:
+      console.log('📱 Using PRODUCTION Firebase configuration');
+      return productionConfig;
+  }
+};
+
+const firebaseConfig = getFirebaseConfig();
+const app = initializeApp(firebaseConfig);
 
 const auth = initializeAuth(app, {
   persistence: getReactNativePersistence(AsyncStorage),
@@ -29,5 +59,7 @@ const auth = initializeAuth(app, {
 
 const db = getFirestore(app);
 const realtimeDb = getDatabase(app);
+
+console.log('🔥 Firebase initialized with project:', firebaseConfig.projectId);
 
 export { auth, db, realtimeDb };
