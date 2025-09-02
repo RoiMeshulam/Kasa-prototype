@@ -2,11 +2,11 @@ FROM node:16
 
 WORKDIR /app
 
-COPY Backend/Kasa_Backend/backend/package*.json ./
+COPY package*.json ./
 
 RUN npm install
 
-COPY Backend/Kasa_Backend/backend/ .
+COPY . .
 
 EXPOSE 8080
 
