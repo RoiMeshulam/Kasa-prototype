@@ -190,33 +190,54 @@ npx expo start
 
 ---
 
-## 🔐 Environment Variables
+## 🔐 Environment Variables (Quick copy-paste)
 
-**Backend** (`.env`)
-```
+**Backend – Production (`.env`)**
+~~~dotenv
 NODE_ENV=production
 PORT=8080
-SERVER_URL=https://<public-server-url>
+SERVER_URL=https://<public-prod-url>
 INTERNAL_API_BASE=http://localhost:8080
 
-# Firebase
-FIREBASE_PROJECT_ID=<id>
-FIREBASE_CLIENT_EMAIL=<svc-account@project.iam.gserviceaccount.com>
+# Firebase (PROD service account)
+FIREBASE_PROJECT_ID=<prod-id>
+FIREBASE_CLIENT_EMAIL=<svc-account@prod-project.iam.gserviceaccount.com>
 FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 
 # Optional DB
 DATABASE_URL=postgres://user:pass@host:5432/kasa
 JWT_SECRET=<random-strong-secret>
-```
+~~~
 
-**Mobile apps** (`app.config.js` / `.env`)
-```
-EXPO_PUBLIC_API_BASE=https://<public-server-url>
-EXPO_PUBLIC_WS_BASE=wss://<public-server-url>
-```
+**Backend – Test (`.env.test`)**
+~~~dotenv
+NODE_ENV=test
+PORT=8080
+SERVER_URL=https://<public-test-url>
+INTERNAL_API_BASE=http://localhost:8080
 
+# Firebase (TEST service account)
+FIREBASE_PROJECT_ID=<test-id>
+FIREBASE_CLIENT_EMAIL=<svc-account@test-project.iam.gserviceaccount.com>
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+
+JWT_SECRET=<random-strong-secret-for-test>
+~~~
+
+**Mobile apps – Test (`.env.test`)**
+~~~dotenv
+EXPO_PUBLIC_ENVIRONMENT=test
+EXPO_PUBLIC_BACKEND_URL="https://test-backend-393925206417.europe-west1.run.app"
+EXPO_PUBLIC_WS_BASE="wss://test-backend-393925206417.europe-west1.run.app"
+~~~
+
+**Mobile apps – Production (`.env.production`)**
+~~~dotenv
+EXPO_PUBLIC_ENVIRONMENT=production
+EXPO_PUBLIC_BACKEND_URL="https://<public-prod-url>"
+EXPO_PUBLIC_WS_BASE="wss://<public-prod-url>"
+~~~
 ---
-
 ## ▶️ Usage
 
 ### User App
