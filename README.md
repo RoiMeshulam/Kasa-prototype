@@ -116,51 +116,6 @@
 
 ---
 
-## 🔌 API Examples
-
-**Start session (QR handshake)**
-```http
-POST /api/sessions/start
-Content-Type: application/json
-
-{ "machineId": "machine-123" }
-```
-_Response_
-```json
-{ "sessionId": "uuid", "status": "active" }
-```
-
-**Scan bottle**
-```http
-POST /api/sessions/:sessionId/bottles
-Content-Type: application/json
-
-{ "barcode": "7290001234567" }
-```
-_Response_
-```json
-{
-  "added": { "id": "ID123", "name": "Coke 500ml", "price": 0.25, "quantity": 1 },
-  "balance": 0.25
-}
-```
-
-**End session**
-```http
-POST /api/sessions/:sessionId/end
-```
-_Response_
-```json
-{ "sessionId": "uuid", "status": "closed", "total": 1.5 }
-```
-
-**User history**
-```http
-GET /api/users/me/sessions?limit=20
-```
-
----
-
 ## ⚙️ Installation
 
 ### Backend
