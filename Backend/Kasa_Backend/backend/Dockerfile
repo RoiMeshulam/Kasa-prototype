@@ -4,16 +4,14 @@ WORKDIR /app
 
 ARG NODE_ENV=production
 
-COPY Backend/Kasa_Backend/backend/package*.json ./
+# עכשיו הנתיבים פשוטים כי ה-context הוא התיקייה הנוכחית
+COPY package*.json ./
+RUN npm ci || npm install
 
-RUN npm install
-
-COPY Backend/Kasa_Backend/backend/ .
+COPY . .
 
 ENV NODE_ENV=${NODE_ENV}
-
-EXPOSE 8080
-
 ENV PORT=8080
+EXPOSE 8080
 
 CMD ["npm", "start"]
