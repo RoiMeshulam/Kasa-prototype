@@ -4,8 +4,8 @@ WORKDIR /app
 
 ARG NODE_ENV=production
 
-# עכשיו הנתיבים פשוטים כי ה-context הוא התיקייה הנוכחית
-COPY Backend/Kasa_Backend/backend/package*.json ./
+# Copy package files from current directory (build context is already Backend/Kasa_Backend/backend)
+COPY package*.json ./
 RUN npm ci || npm install
 
 COPY . .
