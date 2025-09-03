@@ -234,7 +234,7 @@ EXPO_PUBLIC_WS_BASE="wss://test-backend-393925206417.europe-west1.run.app"
 **Mobile apps – Production (`.env.production`)**
 ~~~dotenv
 EXPO_PUBLIC_ENVIRONMENT=production
-EXPO_PUBLIC_BACKEND_URL="https://<public-prod-url>](https://backend-393925206417.europe-west1.run.app"
+EXPO_PUBLIC_BACKEND_URL="https://backend-393925206417.europe-west1.run.app"
 EXPO_PUBLIC_WS_BASE="wss://https://backend-393925206417.europe-west1.run.app"
 ~~~
 ---
