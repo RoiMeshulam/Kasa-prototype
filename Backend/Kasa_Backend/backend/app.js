@@ -18,7 +18,7 @@ app.use('/api', routes);
 app.get('/', (req, res) => {
     res.send('Server is running');
 });
-
+// ds
 // אחרי יצירת app = express()
 app.get('/healthz', (req, res) => {
     res.status(200).json({
