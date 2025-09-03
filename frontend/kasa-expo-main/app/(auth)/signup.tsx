@@ -66,24 +66,54 @@ const SignUpScreen = () => {
       const isValid = await validate();
 
       if (isValid) {
-        await axios.post(`${SOCKET_SERVER_URL}/api/users/signup`, {
+        const finalUrl = `${SOCKET_SERVER_URL}/api/users/signup`;
+        console.log('📡 Final signup URL:', finalUrl);
+        console.log('📡 Environment:', process.env.EXPO_PUBLIC_ENVIRONMENT);
+        console.log('📊 Signup data:', {
+          name: values.name,
+          email: values.email,
+          phoneNumber: values.phone,
+          passwordLength: values.password.length
+        });
+
+        // Test if server is reachable first
+        console.log('🔍 Testing server connectivity...');
+        
+        const response = await axios.post(finalUrl, {
           name: values.name,
           email: values.email,
           password: values.password,
           phoneNumber: values.phone,
+        }, {
+          timeout: 10000,
+          headers: {
+            'Content-Type': 'application/json',
+          }
         });
-        console.log("good");
-
+        
+        console.log("✅ Signup successful:", response.data);
         showCustomAlert("הצלחה", "נרשמת בהצלחה!", "success");
         resetForm();
       }
       setLoading(false);
     } catch (error: any) {
-      console.log("bad");
-      console.error("Registration error:", error);
-      const msg =
-        error?.response?.data?.message || "שגיאה בעת ניסיון הרשמה. נסה שוב";
-      showCustomAlert("שגיאה", msg, "error");
+      console.log("❌ Signup failed");
+      console.error("📊 Full error object:", error);
+      console.error("📊 Error response:", error?.response);
+      console.error("📊 Error status:", error?.response?.status);
+      console.error("📊 Error data:", error?.response?.data);
+      console.error("📊 Request URL:", error?.config?.url);
+      console.error("📊 Request method:", error?.config?.method);
+      console.error("📊 Request headers:", error?.config?.headers);
+      
+      // More specific error handling
+      if (error?.response?.status === 404) {
+        showCustomAlert("שגיאה", "השרת לא נמצא או האנדפוינט לא קיים. בדוק את כתובת השרת.", "error");
+      } else {
+        const msg = error?.response?.data?.message || "שגיאה בעת ניסיון הרשמה. נסה שוב";
+        showCustomAlert("שגיאה", msg, "error");
+      }
+      
       resetForm();
       setLoading(false);
     }

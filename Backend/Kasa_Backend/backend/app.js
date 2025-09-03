@@ -19,6 +19,16 @@ app.get('/', (req, res) => {
     res.send('Server is running');
 });
 
+// אחרי יצירת app = express()
+app.get('/healthz', (req, res) => {
+    res.status(200).json({
+      ok: true,
+      env: process.env.ENVIRONMENT || process.env.NODE_ENV,
+      uptime: process.uptime(),
+    });
+  });
+  
+
 // Error handling middleware
 app.use(errorHandler);
 

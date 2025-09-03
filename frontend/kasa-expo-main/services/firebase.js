@@ -24,13 +24,12 @@ const productionConfig = {
 // Test Firebase Config - You need to replace these with actual test project credentials
 const testConfig = {
   apiKey: "AIzaSyBfGPnN_Q_5RJByE4HlAjWgJbGClY1yGTY",
-  authDomain: "kasa_test.firebaseapp.com",
+  authDomain: "kasa-test.firebaseapp.com",
   databaseURL: "https://kasa-test-fe398-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "kasa-test-fe398",
   storageBucket: "kasa-test-fe398.firebasestorage.app",
-  messagingSenderId: "YOUR_TEST_MESSAGING_SENDER_ID",
+  messagingSenderId: "756418549644",
   appId: "1:756418549644:android:28a7db345c89b393e728a9",
-  // measurementId: "YOUR_TEST_MEASUREMENT_ID"
 };
 
 // Determine which config to use based on environment
@@ -39,8 +38,10 @@ const getFirebaseConfig = () => {
   console.log('🔧 Firebase Environment:', environment);
   
   switch (environment) {
-    case 'test':
     case 'development':
+      console.log('📱 Using TEST Firebase configuration for development');
+      return testConfig;
+    case 'test':
       console.log('📱 Using TEST Firebase configuration');
       return testConfig;
     case 'production':

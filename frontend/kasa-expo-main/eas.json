@@ -12,7 +12,7 @@
       },
       "env": {
         "EXPO_PUBLIC_ENVIRONMENT": "development",
-        "EXPO_PUBLIC_BACKEND_URL": "http://10.0.0.9:8080",
+        "EXPO_PUBLIC_BACKEND_URL": "http://localhost:8080",
         "EXPO_PUBLIC_API_VERSION": "v1",
         "EXPO_PUBLIC_DEBUG_MODE": "true"
       }
@@ -35,8 +35,8 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_ENVIRONMENT": "production",
-        "EXPO_PUBLIC_BACKEND_URL": "https://backend-393925206417.europe-west1.run.app",
+        "EXPO_PUBLIC_ENVIRONMENT": "test",
+        "EXPO_PUBLIC_BACKEND_URL": "https://test-backend-393925206417.europe-west1.run.app",
         "EXPO_PUBLIC_API_VERSION": "v1",
         "EXPO_PUBLIC_DEBUG_MODE": "false"
       }
@@ -51,18 +51,6 @@
         "EXPO_PUBLIC_BACKEND_URL": "https://backend-393925206417.europe-west1.run.app",
         "EXPO_PUBLIC_API_VERSION": "v1",
         "EXPO_PUBLIC_DEBUG_MODE": "false"
-      }
-    },
-    "local": {
-      "distribution": "internal",
-      "android": {
-        "buildType": "apk"
-      },
-      "env": {
-        "EXPO_PUBLIC_ENVIRONMENT": "development",
-        "EXPO_PUBLIC_BACKEND_URL": "https://backend-393925206417.europe-west1.run.app",
-        "EXPO_PUBLIC_API_VERSION": "v1",
-        "EXPO_PUBLIC_DEBUG_MODE": "true"
       }
     }
   },
