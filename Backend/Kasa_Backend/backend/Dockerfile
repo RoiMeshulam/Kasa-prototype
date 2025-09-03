@@ -4,11 +4,11 @@ WORKDIR /app
 
 ARG NODE_ENV=production
 
-# Copy package files from current directory (build context is already Backend/Kasa_Backend/backend)
-COPY package*.json ./
+# Copy package files from the backend directory
+COPY Backend/Kasa_Backend/backend/package*.json ./
 RUN npm ci || npm install
 
-COPY . .
+COPY Backend/Kasa_Backend/backend/ .
 
 ENV NODE_ENV=${NODE_ENV}
 ENV PORT=8080
