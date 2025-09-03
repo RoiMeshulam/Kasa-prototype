@@ -50,7 +50,12 @@
       "router": {},
       "eas": {
         "projectId": "467a750f-95c4-451b-a328-ef82bd2f96d9"
-      }
+      },
+      "BACKEND_URL": "https://kasa-test-393925206417.europe-west1.run.app",
+      "EXPO_PUBLIC_ENVIRONMENT": "test",
+      "EXPO_PUBLIC_DEV_SERVER_URL": "http://localhost:3000",
+      "EXPO_PUBLIC_TEST_SERVER_URL": "https://kasa-test-393925206417.europe-west1.run.app",
+      "EXPO_PUBLIC_PROD_SERVER_URL": "https://your-production-server.com"
     },
     "developmentClient": {
       "silentLaunch": false
