@@ -9,6 +9,24 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_ENVIRONMENT": "development",
+        "EXPO_PUBLIC_BACKEND_URL": "http://localhost:8080",
+        "EXPO_PUBLIC_API_VERSION": "v1",
+        "EXPO_PUBLIC_DEBUG_MODE": "true"
+      }
+    },
+    "test": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_ENVIRONMENT": "test",
+        "EXPO_PUBLIC_BACKEND_URL": "https://test-backend-393925206417.europe-west1.run.app",
+        "EXPO_PUBLIC_API_VERSION": "v1",
+        "EXPO_PUBLIC_DEBUG_MODE": "true"
       }
     },
     "preview": {
@@ -17,7 +35,10 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://backend-393925206417.europe-west1.run.app"
+        "EXPO_PUBLIC_ENVIRONMENT": "test",
+        "EXPO_PUBLIC_BACKEND_URL": "https://test-backend-393925206417.europe-west1.run.app",
+        "EXPO_PUBLIC_API_VERSION": "v1",
+        "EXPO_PUBLIC_DEBUG_MODE": "false"
       }
     },
     "production": {
@@ -26,16 +47,10 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://backend-393925206417.europe-west1.run.app"
-      }
-    },
-    "local": {
-      "distribution": "internal",
-      "android": {
-        "buildType": "apk"
-      },
-      "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://backend-393925206417.europe-west1.run.app"
+        "EXPO_PUBLIC_ENVIRONMENT": "production",
+        "EXPO_PUBLIC_BACKEND_URL": "https://backend-393925206417.europe-west1.run.app",
+        "EXPO_PUBLIC_API_VERSION": "v1",
+        "EXPO_PUBLIC_DEBUG_MODE": "false"
       }
     }
   },

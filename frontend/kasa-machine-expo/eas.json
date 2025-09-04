@@ -9,6 +9,10 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_ENVIRONMENT": "development",
+        "EXPO_PUBLIC_DEV_SERVER_URL": "http://localhost:3000"
       }
     },
     "preview": {
@@ -17,7 +21,9 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://backend-393925206417.europe-west1.run.app"
+        "EXPO_PUBLIC_BACKEND_URL": "https://backend-393925206417.europe-west1.run.app",
+        "EXPO_PUBLIC_ENVIRONMENT": "test",
+        "EXPO_PUBLIC_TEST_SERVER_URL": "https://kasa-test-393925206417.europe-west1.run.app"
       }
     },
     "production": {
@@ -26,7 +32,9 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://backend-393925206417.europe-west1.run.app"
+        "EXPO_PUBLIC_BACKEND_URL": "https://backend-393925206417.europe-west1.run.app",
+        "EXPO_PUBLIC_ENVIRONMENT": "production",
+        "EXPO_PUBLIC_PROD_SERVER_URL": "https://backend-393925206417.europe-west1.run.app"
       }
     },
     "local": {

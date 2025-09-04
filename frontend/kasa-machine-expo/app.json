@@ -46,7 +46,11 @@
       "router": {},
       "eas": {
         "projectId": "119178af-cee1-48ce-803c-bf91ffdb55e5"
-      }
+      },
+      "EXPO_PUBLIC_ENVIRONMENT": "test",
+      "EXPO_PUBLIC_DEV_SERVER_URL": "http://localhost:3000",
+      "EXPO_PUBLIC_TEST_SERVER_URL": "https://kasa-test-393925206417.europe-west1.run.app",
+      "EXPO_PUBLIC_PROD_SERVER_URL": "https://backend-393925206417.europe-west1.run.app"
     }
   }
 }

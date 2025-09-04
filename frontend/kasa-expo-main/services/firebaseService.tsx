@@ -17,7 +17,15 @@ interface UserInfo {
 }
 
 const SOCKET_SERVER_URL = getServerUrl();
-console.log(SOCKET_SERVER_URL);
+const ENVIRONMENT = process.env.EXPO_PUBLIC_ENVIRONMENT || 'production';
+
+console.log('🔧 Current Environment:', ENVIRONMENT);
+console.log('🌐 Server URL:', SOCKET_SERVER_URL);
+
+// Add validation for server URL
+if (!SOCKET_SERVER_URL) {
+  console.error('❌ SOCKET_SERVER_URL is undefined!');
+}
 
 // 📌 פונקציית בדיקת טוקן קיים
 export const validateExistingToken = async (): Promise<UserInfo | null> => {
@@ -28,6 +36,12 @@ export const validateExistingToken = async (): Promise<UserInfo | null> => {
     if (!token) {
       log.warn("🔍 validateExistingToken: No token found in storage");
       return null;
+    }
+
+    // Add server URL validation
+    if (!SOCKET_SERVER_URL) {
+      log.error("❌ validateExistingToken: Server URL is undefined");
+      throw new Error("Server URL not configured");
     }
 
     log.debug("🔍 validateExistingToken: Token found, length:", token.length);
@@ -66,6 +80,7 @@ export const validateExistingToken = async (): Promise<UserInfo | null> => {
     log.error("❌ validateExistingToken: Token validation failed");
     log.error("❌ Error details:", error?.response?.data || error.message);
     log.error("❌ Error status:", error?.response?.status);
+    log.error("❌ Full error:", error);
     
     // מחיקת טוקן לא תקין
     log.debug("🗑️ Removing invalid token from storage");
@@ -92,6 +107,13 @@ export const signInWithEmail = async (
   try {
     if (!email.trim() || !password) {
       showCustomAlert("שגיאה", "אנא מלא את כל השדות", "error");
+      return;
+    }
+
+    // Add server URL validation
+    if (!SOCKET_SERVER_URL) {
+      log.error("❌ signInWithEmail: Server URL is undefined");
+      showCustomAlert("שגיאה", "שגיאת הגדרות שרת. אנא פנה למפתח.", "error");
       return;
     }
 
@@ -144,6 +166,7 @@ export const signInWithEmail = async (
     }
   } catch (error: any) {
     log.error("❌ Firebase login error:", error.code, error.message);
+    log.error("❌ Full error object:", error);
 
     let errorMessage = "פרטי ההתחברות שגויים או שקרתה תקלה";
 

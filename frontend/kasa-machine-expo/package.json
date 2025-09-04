@@ -11,7 +11,13 @@
     "lint": "expo lint",
     "build:preview": "eas build --profile preview --platform android",
     "build:production": "eas build --profile production --platform android",
-    "build:development": "eas build --profile development --platform android"
+    "build:development": "eas build --profile development --platform android",
+    "start:dev": "EXPO_PUBLIC_ENVIRONMENT=development expo start",
+    "start:test": "EXPO_PUBLIC_ENVIRONMENT=test expo start",
+    "start:prod": "EXPO_PUBLIC_ENVIRONMENT=production expo start",
+    "android:expo": "expo start --android",
+    "android:expo:dev": "EXPO_PUBLIC_ENVIRONMENT=development expo start --android --go",
+    "android:expo:test": "EXPO_PUBLIC_ENVIRONMENT=test expo start --android --go"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",

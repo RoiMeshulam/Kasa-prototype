@@ -36,16 +36,37 @@ export default function ScannerScreen() {
     title: string;
     message: string;
     type?: "success" | "error";
+    showRetry?: boolean;
+    onRetry?: () => void;
   }>({
     title: "",
     message: "",
     type: undefined,
+    showRetry: false,
   });
 
-  const showAlert = (title: string, message: string, type: "success" | "error") => {
-    setAlertData({ title, message, type });
+  const bottleScanTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showAlert = (
+    title: string, 
+    message: string, 
+    type: "success" | "error", 
+    showRetry: boolean = false,
+    onRetry?: () => void
+  ) => {
+    setAlertData({ title, message, type, showRetry, onRetry });
     setAlertVisible(true);
   };
+
+  // Clear timeout when component unmounts
+  useEffect(() => {
+    return () => {
+      if (bottleScanTimeoutRef.current) {
+        clearTimeout(bottleScanTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // ---------- socket setup ----------
   useEffect(() => {
     if (!userInfo?.uid) return;
@@ -67,6 +88,13 @@ export default function ScannerScreen() {
 
     socket.on('bottle_data', ({ bottle }) => {
       console.log('🍾 bottle_data:', bottle);
+      
+      // Clear timeout when bottle is found
+      if (bottleScanTimeoutRef.current) {
+        clearTimeout(bottleScanTimeoutRef.current);
+        bottleScanTimeoutRef.current = null;
+      }
+      
       setLoading(false);
 
       setCurrentBottleId(bottle.id);
@@ -82,8 +110,21 @@ export default function ScannerScreen() {
 
     socket.on('bottle_error', ({ message }) => {
       console.warn('🚨 bottle_error:', message);
+      
+      // Clear timeout
+      if (bottleScanTimeoutRef.current) {
+        clearTimeout(bottleScanTimeoutRef.current);
+        bottleScanTimeoutRef.current = null;
+      }
+      
       setLoading(false); // אם היית ב־loading
-      showAlert('שגיאה', message, 'error'); // מציג את ה־CustomAlert
+      showAlert(
+        'שגיאה', 
+        message, 
+        'error', 
+        true, 
+        () => setStage('scannerBottle')
+      );
     });
 
     socket.on('bottle_progress', ({ bottles: serverBottles, balance: serverBalance }) => {
@@ -105,12 +146,27 @@ export default function ScannerScreen() {
     if (!userInfo?.uid || loading) return;
     setLoading(true);
     try {
+      console.log('🚀 Making QR scan request:', { qrId, userId: userInfo.uid, API });
       await axios.post(`${API}/api/sessions`, { qrId, userId: userInfo.uid });
-      // showAlert("הצלחה", "סשן התחיל בהצלחה!", "success");
     } catch (err: any) {
+      console.error('❌ QR Scan Error:', {
+        status: err?.response?.status,
+        statusText: err?.response?.statusText,
+        data: err?.response?.data,
+        headers: err?.response?.headers,
+        url: err?.config?.url,
+        method: err?.config?.method
+      });
+      
       const message =
         err?.response?.data?.message || "לא נמצאה מכונה מתאימה. אנא סרקו שוב את הברקוד";
-      showAlert("שגיאה", message, "error");
+      showAlert(
+        "שגיאה", 
+        message, 
+        "error", 
+        true, 
+        () => setStage('scannerQR')
+      );
     } finally {
       setLoading(false);
     }
@@ -119,6 +175,24 @@ export default function ScannerScreen() {
   const handleBottleScan = (barcode: string) => {
     if (!sessionId || loading || !socketRef.current) return;
     setLoading(true);
+    
+    // Clear any existing timeout
+    if (bottleScanTimeoutRef.current) {
+      clearTimeout(bottleScanTimeoutRef.current);
+    }
+    
+    // Set timeout for 10 seconds
+    bottleScanTimeoutRef.current = setTimeout(() => {
+      setLoading(false);
+      showAlert(
+        'לא נמצא בקבוק', 
+        'הברקוד לא זוהה או שהבקבוק לא נמצא במערכת. האם תרצה לנסות שוב?', 
+        'error', 
+        true, 
+        () => setStage('scannerBottle')
+      );
+    }, 10000); // 10 seconds timeout
+
     socketRef.current.emit('bottle_scanned', { sessionId, barcode });
   };
 
@@ -145,6 +219,7 @@ export default function ScannerScreen() {
     if (!sessionId) return;
     setLoading(true);
     try {
+      console.log('🚀 Making end session request:', { sessionId, API });
       const response = await axios.post(`${API}/api/sessions/${sessionId}/end`);
 
       console.log({ response: response.data });
@@ -167,7 +242,15 @@ export default function ScannerScreen() {
       // ✅ ריפרש של sessions & summary
       setRefreshSessions(prev => !prev); // יפעיל useEffect ב־context
 
-    } catch (e) {
+    } catch (e: any) {
+      console.error('❌ End Session Error:', {
+        status: e?.response?.status,
+        statusText: e?.response?.statusText,
+        data: e?.response?.data,
+        headers: e?.response?.headers,
+        url: e?.config?.url,
+        method: e?.config?.method
+      });
       console.warn('⚠️ end-session failed', e);
     } finally {
       setLoading(false);
@@ -206,6 +289,8 @@ export default function ScannerScreen() {
           title={alertData.title}
           message={alertData.message}
           type={alertData.type}
+          showRetry={alertData.showRetry}
+          onRetry={alertData.onRetry}
           onClose={() => setAlertVisible(false)}
         />
       </>
@@ -228,6 +313,8 @@ export default function ScannerScreen() {
           title={alertData.title}
           message={alertData.message}
           type={alertData.type}
+          showRetry={alertData.showRetry}
+          onRetry={alertData.onRetry}
           onClose={() => setAlertVisible(false)}
         />
       </>

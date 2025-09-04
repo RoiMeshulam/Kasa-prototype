@@ -1,5 +1,3 @@
-import Constants from "expo-constants";
-
 export const getServerUrl = (): string => {
   const environment = process.env.EXPO_PUBLIC_ENVIRONMENT || 'production';
   
