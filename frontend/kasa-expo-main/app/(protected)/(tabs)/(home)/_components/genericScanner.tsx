@@ -59,7 +59,10 @@ export default function GenericScanner({
 
   // אפשרות לסריקה חוזרת אחרי שה־loading ירד
   useEffect(() => {
-    if (!loading) setScanned(false);
+    if (!loading) {
+      setScanned(false);
+      // Remove the flag reset logic that was causing the infinite loop
+    }
   }, [loading]);
 
   const handleScan = (result: BarcodeScanningResult) => {

@@ -15,7 +15,10 @@
     "build:dev": "eas build --profile development",
     "build:test": "eas build --profile test",
     "build:preview": "eas build --profile preview",
-    "build:prod": "eas build --profile production"
+    "build:prod": "eas build --profile production",
+    "android:expo": "expo start --android",
+    "android:expo:dev": "EXPO_PUBLIC_ENVIRONMENT=development expo start --android",
+    "ios:expo": "expo start --ios"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
