@@ -27,7 +27,7 @@
     "android": {
       "package": "com.meshulamdev.kasa",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/logo.png",
         "backgroundColor": "#ffffff"
       },
       "config": {

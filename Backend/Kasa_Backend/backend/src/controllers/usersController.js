@@ -34,6 +34,7 @@ async function verifyAndGetAuthUser(token) {
 
 // עוזר: upsert ב-RTDB (transaction כדי למנוע דריסה במקביל)
 async function upsertUserInRTDB({ uid, authUser, decodedToken }) {
+  console.log(`Upserting user in RTDB: ${uid}`);
   const ref = rtdb.ref(`users/${uid}`);
   await ref.transaction((current) => {
     if (current) {
