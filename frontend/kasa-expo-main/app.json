@@ -4,8 +4,9 @@
     "slug": "kasa",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/logo.png",
     "scheme": "kasa",
+    "owner":"rohimesh",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": false,
     "ios": {
@@ -18,7 +19,10 @@
         "UIRequiresFullScreen": false,
         "UIViewControllerBasedStatusBarAppearance": false
       },
-      "bundleIdentifier": "com.meshulamdev.kasa"
+      "bundleIdentifier": "com.meshulamdev.kasa${EXPO_PUBLIC_BUNDLE_SUFFIX ? '.' + EXPO_PUBLIC_BUNDLE_SUFFIX : ''}",
+      "urlSchemes": [
+        "kasa${EXPO_PUBLIC_BUNDLE_SUFFIX ? '-' + EXPO_PUBLIC_BUNDLE_SUFFIX : ''}"
+      ]
     },
     "android": {
       "package": "com.meshulamdev.kasa",
@@ -51,11 +55,16 @@
       "eas": {
         "projectId": "467a750f-95c4-451b-a328-ef82bd2f96d9"
       },
-      "BACKEND_URL": "https://kasa-test-393925206417.europe-west1.run.app",
-      "EXPO_PUBLIC_ENVIRONMENT": "test",
+      "BACKEND_URL": "http://localhost:3000",
+      "EXPO_PUBLIC_ENVIRONMENT": "dev",
       "EXPO_PUBLIC_DEV_SERVER_URL": "http://localhost:3000",
       "EXPO_PUBLIC_TEST_SERVER_URL": "https://kasa-test-393925206417.europe-west1.run.app",
-      "EXPO_PUBLIC_PROD_SERVER_URL": "https://your-production-server.com"
+      "EXPO_PUBLIC_PROD_SERVER_URL": "https://backend-393925206417.europe-west1.run.app",
+      "FIREBASE_PROJECT_ID_DEV": "kasa-test-b8c9a",
+      "FIREBASE_PROJECT_ID_TEST": "kasa-test-b8c9a",
+      "FIREBASE_PROJECT_ID_PROD": "kasa-prototype",
+       "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "756418549644-1fi2fstpm6q5lsgokjkq0nf9hcthupoi.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "756418549644-eqgjt28ks4mmmt70c05lclbg81huq2ss.apps.googleusercontent.com"
     },
     "developmentClient": {
       "silentLaunch": false
@@ -98,6 +107,12 @@
               "he"
             ]
           }
+        }
+      ],
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.756418549644-1fi2fstpm6q5lsgokjkq0nf9hcthupoi"
         }
       ],
       "expo-dev-client"

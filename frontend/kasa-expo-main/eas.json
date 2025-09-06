@@ -1,6 +1,6 @@
 {
   "cli": {
-    "version": ">= 16.17.4",
+    "version": ">= 5.4.0",
     "appVersionSource": "remote"
   },
   "build": {
@@ -11,10 +11,12 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_ENVIRONMENT": "development",
-        "EXPO_PUBLIC_BACKEND_URL": "http://localhost:8080",
-        "EXPO_PUBLIC_API_VERSION": "v1",
-        "EXPO_PUBLIC_DEBUG_MODE": "true"
+        "EXPO_PUBLIC_ENVIRONMENT": "dev",
+        "EXPO_PUBLIC_BACKEND_URL": "http://localhost:3000",
+        "EXPO_PUBLIC_FIREBASE_PROJECT_ID": "kasa-test-fe398",
+        "EXPO_PUBLIC_BUNDLE_SUFFIX": "dev",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "756418549644-1fi2fstpm6q5lsgokjkq0nf9hcthupoi.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "756418549644-eqgjt28ks4mmmt70c05lclbg81huq2ss.apps.googleusercontent.com"
       }
     },
     "test": {
@@ -24,9 +26,12 @@
       },
       "env": {
         "EXPO_PUBLIC_ENVIRONMENT": "test",
-        "EXPO_PUBLIC_BACKEND_URL": "https://test-backend-393925206417.europe-west1.run.app",
-        "EXPO_PUBLIC_API_VERSION": "v1",
-        "EXPO_PUBLIC_DEBUG_MODE": "true"
+        "EXPO_PUBLIC_BACKEND_URL": "https://kasa-test-393925206417.europe-west1.run.app",
+        "EXPO_PUBLIC_FIREBASE_PROJECT_ID": "kasa-test-b8c9a",
+        "EXPO_PUBLIC_BUNDLE_SUFFIX": "test",
+        "EXPO_PUBLIC_FIREBASE_PACKAGE_NAME": "kasa_test.firebaseapp.com",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "756418549644-eqgjt28ks4mmmt70c05lclbg81huq2ss.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "756418549644-eqgjt28ks4mmmt70c05lclbg81huq2ss.apps.googleusercontent.com"
       }
     },
     "preview": {
@@ -36,9 +41,12 @@
       },
       "env": {
         "EXPO_PUBLIC_ENVIRONMENT": "test",
-        "EXPO_PUBLIC_BACKEND_URL": "https://test-backend-393925206417.europe-west1.run.app",
+        "EXPO_PUBLIC_BACKEND_URL": "https://kasa-test-393925206417.europe-west1.run.app",
         "EXPO_PUBLIC_API_VERSION": "v1",
-        "EXPO_PUBLIC_DEBUG_MODE": "false"
+        "EXPO_PUBLIC_DEBUG_MODE": "false",
+        "EXPO_PUBLIC_FIREBASE_PACKAGE_NAME": "kasa_test.firebaseapp.com",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "756418549644-eqgjt28ks4mmmt70c05lclbg81huq2ss.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "756418549644-eqgjt28ks4mmmt70c05lclbg81huq2ss.apps.googleusercontent.com"
       }
     },
     "production": {
@@ -47,10 +55,11 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "EXPO_PUBLIC_ENVIRONMENT": "production",
+        "EXPO_PUBLIC_ENVIRONMENT": "prod",
         "EXPO_PUBLIC_BACKEND_URL": "https://backend-393925206417.europe-west1.run.app",
-        "EXPO_PUBLIC_API_VERSION": "v1",
-        "EXPO_PUBLIC_DEBUG_MODE": "false"
+        "EXPO_PUBLIC_FIREBASE_PROJECT_ID": "kasa-prototype",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "756418549644-eqgjt28ks4mmmt70c05lclbg81huq2ss.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "756418549644-eqgjt28ks4mmmt70c05lclbg81huq2ss.apps.googleusercontent.com"
       }
     }
   },

@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { useGlobalContext } from "@/store/globalContext";
 import { useRouter, Link } from "expo-router";
-import { signInWithEmail } from "@/services/firebaseService";
+import { signInWithEmail, signInWithGoogle } from "@/services/firebaseService";
 import CustomAlert from "@/components/ui/CustomAlert";
 import { InputField } from "@/components/ui/InputField";
 import { AntDesign } from "@expo/vector-icons";
@@ -108,6 +108,26 @@ const SignInScreen = () => {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    try {
+      setLoading(true);
+      console.log("🔐 Starting Google login...");
+      
+      await signInWithGoogle(
+        setUserInfo,
+        setIsConnected,
+        showCustomAlert,
+        router
+      );
+      
+      setLoading(false);
+    } catch (error) {
+      console.error("❌ Google login error:", error);
+      setLoading(false);
+      showCustomAlert("שגיאה", "שגיאה בהתחברות עם Google. נסה שוב.", "error");
+    }
+  };
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -180,6 +200,30 @@ const SignInScreen = () => {
                 <Text className="text-white text-center font-semibold">
                   {t("Sign In")}
                 </Text>
+              )}
+            </TouchableOpacity>
+
+            {/* Google Sign-In Button */}
+            <View className="flex-row items-center mt-6 mb-4">
+              <View className="flex-1 h-px bg-gray-300" />
+              <Text className="mx-4 text-gray-500">{t("או")}</Text>
+              <View className="flex-1 h-px bg-gray-300" />
+            </View>
+
+            <TouchableOpacity
+              className="w-full bg-white border border-gray-300 p-4 rounded-lg flex-row items-center justify-center"
+              onPress={handleGoogleLogin}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator size={"small"} color={"#4285f4"} />
+              ) : (
+                <>
+                  <AntDesign name="google" size={20} color="#4285f4" style={{ marginRight: 8 }} />
+                  <Text className="text-gray-700 font-semibold">
+                    {t("Continue with Google")}
+                  </Text>
+                </>
               )}
             </TouchableOpacity>
 
