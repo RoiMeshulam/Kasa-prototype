@@ -62,6 +62,8 @@ const signIn = async (req, res) => {
     console.log(`🔑 User authenticated: ${uid}`);
 
     const userData = await upsertUserInRTDB({ uid, authUser, decodedToken });
+    console.log("✅ User data upserted in RTDB");
+    console.log("userData:", userData);
 
     return res.status(200).json({
       uid,
