@@ -34,22 +34,17 @@ async function verifyAndGetAuthUser(token) {
 
 // עוזר: upsert ב-RTDB (transaction כדי למנוע דריסה במקביל)
 async function upsertUserInRTDB({ uid, authUser, decodedToken }) {
-  console.log(`Upserting user in RTDB: ${uid}`);
   const ref = rtdb.ref(`users/${uid}`);
-  await ref.transaction((current) => {
-    if (current) {
-      // מעדכנים רק lastLoginAt כדי לא לדרוס מידע קיים
-      return {
-        ...current,
-        lastLoginAt: admin.database.ServerValue.TIMESTAMP,
-      };
-    }
-    // משתמש חדש
-    return buildDefaultUser({ uid, authUser, decodedToken });
-  }, { applyLocally: false });
+  const snap = await ref.once('value');
 
-  const snapshot = await ref.once("value");
-  return snapshot.val();
+  if (snap.exists()) {
+    await ref.child('lastLoginAt').set(admin.database.ServerValue.TIMESTAMP);
+    return (await ref.once('value')).val();
+  } else {
+    const userObj = buildDefaultUser({ uid, authUser, decodedToken });
+    await ref.set(userObj);
+    return userObj;
+  }
 }
 
 // ------------------ Controllers ------------------ //
