@@ -55,6 +55,7 @@ async function upsertUserInRTDB({ uid, authUser, decodedToken }) {
 // ------------------ Controllers ------------------ //
 
 const signIn = async (req, res) => {
+  console.log("🟢signIn func check if server updates");
   try {
     const token = req.body?.token || (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
     if (!token) return res.status(400).json({ error: "Missing authentication token" });
