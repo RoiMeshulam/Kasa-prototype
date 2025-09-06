@@ -1,11 +1,12 @@
-import { signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithCredential } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { Platform } from "react-native";
 import { auth } from "./firebase";
 import { Router } from "expo-router";
 import { getServerUrl } from "@/utils/network";
-import log from "@/utils/logger";
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
+import Constants from 'expo-constants';
 
 // 📌 טיפוס למידע על המשתמש
 interface UserInfo {
@@ -22,86 +23,110 @@ const ENVIRONMENT = process.env.EXPO_PUBLIC_ENVIRONMENT || 'production';
 console.log('🔧 Current Environment:', ENVIRONMENT);
 console.log('🌐 Server URL:', SOCKET_SERVER_URL);
 
-// Add validation for server URL
-if (!SOCKET_SERVER_URL) {
-  console.error('❌ SOCKET_SERVER_URL is undefined!');
-}
+// Axios interceptors (לוגים)
+axios.interceptors.request.use(
+  (config) => {
+    console.log('📡 Axios Request:', { url: config.url, method: config.method, data: config.data, headers: config.headers });
+    return config;
+  },
+  (error) => {
+    console.log('❌ Axios Request Error:', error);
+    return Promise.reject(error);
+  }
+);
 
-// 📌 פונקציית בדיקת טוקן קיים
+axios.interceptors.response.use(
+  (response) => {
+    console.log('✅ Axios Response:', { status: response.status, statusText: response.statusText, data: response.data });
+    return response;
+  },
+  (error) => {
+    console.log('❌ Axios Response Error:', {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      message: error.message,
+      code: error.code
+    });
+    return Promise.reject(error);
+  }
+);
+
+// -------- Google Sign-In: קונפיג חד-פעמי --------
+export const configureGoogleSignIn = () => {
+  // עבור Firebase Authentication - צריך Web Client ID (לא Android)
+  const fromExtraWeb = Constants.expoConfig?.extra?.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+  const fromEnvWeb = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+  const webClientId = fromExtraWeb || fromEnvWeb;
+
+  if (!webClientId) {
+    console.error("❌ Missing EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID (app.json extra / env)");
+    console.log("📋 Available env vars:", {
+      fromEnvWeb: fromEnvWeb ? fromEnvWeb.slice(0, 12) + '...' : undefined,
+      fromExtraWeb: fromExtraWeb ? fromExtraWeb.slice(0, 12) + '...' : undefined
+    });
+    return;
+  }
+
+  console.log('✅ Google Sign-In configured with webClientId:', webClientId);
+  console.log('🔧 Using Web Client ID for Firebase Authentication');
+  
+  GoogleSignin.configure({
+    webClientId: webClientId, // Web Client ID נדרש לFirebase Auth
+    offlineAccess: false,
+    forceCodeForRefreshToken: false,
+    hostedDomain: undefined,
+  });
+};
+
+// -------- Token Validation --------
 export const validateExistingToken = async (): Promise<UserInfo | null> => {
   try {
-    log.debug("🔍 validateExistingToken: Starting validation...");
-    
+    console.log("🔍 validateExistingToken: Starting validation...");
     const token = await AsyncStorage.getItem("token");
     if (!token) {
-      log.warn("🔍 validateExistingToken: No token found in storage");
+      console.warn("🔍 validateExistingToken: No token found in storage");
       return null;
     }
-
-    // Add server URL validation
     if (!SOCKET_SERVER_URL) {
-      log.error("❌ validateExistingToken: Server URL is undefined");
+      console.error("❌ validateExistingToken: Server URL is undefined");
       throw new Error("Server URL not configured");
     }
 
-    log.debug("🔍 validateExistingToken: Token found, length:", token.length);
-    log.debug("🔍 validateExistingToken: Validating with server...");
-    log.debug("🌐 Server URL:", SOCKET_SERVER_URL);
-    
-    // שליחת הטוקן לשרת לוולידציה
     const response = await axios.post(
       `${SOCKET_SERVER_URL}/api/users/validate-token`,
       { token },
-      {
-        timeout: 10000, // 10 seconds timeout
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }
+      { timeout: 10000, headers: { 'Content-Type': 'application/json' } }
     );
 
-    log.info("✅ validateExistingToken: Server response received");
-    log.debug("📊 Response data:", response.data);
-
     const { uid, email, name, phoneNumber, balance } = response.data;
-
-    const userInfo: UserInfo = {
-      uid,
-      email,
-      name,
-      phoneNumber,
-      balance,
-    };
-
-    log.info("✅ validateExistingToken: Token validation successful");
+    const userInfo: UserInfo = { uid, email, name, phoneNumber, balance };
+    console.log("✅ validateExistingToken: OK");
     return userInfo;
-
   } catch (error: any) {
-    log.error("❌ validateExistingToken: Token validation failed");
-    log.error("❌ Error details:", error?.response?.data || error.message);
-    log.error("❌ Error status:", error?.response?.status);
-    log.error("❌ Full error:", error);
-    
-    // מחיקת טוקן לא תקין
-    log.debug("🗑️ Removing invalid token from storage");
-    await AsyncStorage.removeItem("token");
-    await AsyncStorage.removeItem("userInfo");
-    
+    const status = error?.response?.status;
+    const msg = error?.response?.data?.message || '';
+    console.error("❌ validateExistingToken failed:", status, msg || error.message);
+
+    // 🧠 מוחקים רק אם ברור שהטוקן לא תקין
+    if (status === 401 || status === 403 || /invalid/i.test(msg)) {
+      console.log("🗑️ Removing invalid token from storage");
+      await AsyncStorage.removeItem("token");
+      await AsyncStorage.removeItem("userInfo");
+    } else {
+      console.log("⚠️ Network/Server error during validation — keeping token for retry");
+    }
     return null;
   }
 };
 
-// 📌 הפונקציה הראשית
+// -------- Email/Password Sign-In --------
 export const signInWithEmail = async (
   email: string,
   password: string,
   setUserInfo: (user: UserInfo) => void,
   setIsConnected: (status: boolean) => void,
-  showCustomAlert: (
-    title: string,
-    message: string,
-    type: "success" | "error"
-  ) => void,
+  showCustomAlert: (title: string, message: string, type: "success" | "error") => void,
   router: Router
 ): Promise<void> => {
   try {
@@ -109,110 +134,112 @@ export const signInWithEmail = async (
       showCustomAlert("שגיאה", "אנא מלא את כל השדות", "error");
       return;
     }
-
-    // Add server URL validation
     if (!SOCKET_SERVER_URL) {
-      log.error("❌ signInWithEmail: Server URL is undefined");
+      console.error("❌ signInWithEmail: Server URL is undefined");
       showCustomAlert("שגיאה", "שגיאת הגדרות שרת. אנא פנה למפתח.", "error");
       return;
     }
 
-    log.debug("🔐 Signing in with email and password...");
-    const userCredential = await signInWithEmailAndPassword(
-      auth,
-      email,
-      password
-    );
-
+    console.log("🔐 Signing in with email/password...");
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     const token = await user.getIdToken();
-    log.info("✅ Firebase sign-in successful:", user.uid);
 
-    // 📡 שליחת הטוקן לשרת לקבלת מידע נוסף
-    try {
-      log.debug("📡 Sending token to server...");
-      const response = await axios.post(
-        `${SOCKET_SERVER_URL}/api/users/signin`,
-        { token }
-      );
+    const response = await axios.post(`${SOCKET_SERVER_URL}/api/users/signin`, { token });
+    const { uid, name, phoneNumber, balance } = response.data as UserInfo;
+    const userInfo: UserInfo = { uid, email: response.data.email, name, phoneNumber, balance };
 
-      log.debug("📊 Server response:", response.data);
+    await AsyncStorage.setItem("token", token);
+    await AsyncStorage.setItem("userInfo", JSON.stringify(userInfo));
 
-      const { uid, email, name, phoneNumber, balance } = response.data;
-
-      const userInfo: UserInfo = {
-        uid,
-        email,
-        name,
-        phoneNumber,
-        balance,
-      };
-
-      // 🧠 שמירת טוקן ופרטי משתמש בלוקאל סטורג'
-      await AsyncStorage.setItem("token", token);
-      await AsyncStorage.setItem("userInfo", JSON.stringify(userInfo));
-
-      // 🎯 עדכון סטייט
-      setUserInfo(userInfo);
-      setIsConnected(true);
-      
-      showCustomAlert("הצלחה", `ברוך הבא ${name || email}!`, "success");
-      router.replace("/(protected)/(tabs)/(home)");
-    } catch (error: any) {
-      log.error("❌ Server error during sign-in:", error);
-      const msg =
-        error?.response?.data?.message || "שגיאה בעת התחברות לשרת. נסה שוב.";
-      showCustomAlert("שגיאה", msg, "error");
-    }
+    setUserInfo(userInfo);
+    setIsConnected(true);
+    showCustomAlert("הצלחה", `ברוך הבא ${name || email}!`, "success");
+    router.replace("/(protected)/(tabs)/(home)");
   } catch (error: any) {
-    log.error("❌ Firebase login error:", error.code, error.message);
-    log.error("❌ Full error object:", error);
-
+    console.error("❌ Firebase login error:", error.code, error.message);
     let errorMessage = "פרטי ההתחברות שגויים או שקרתה תקלה";
-
     switch (error.code) {
-      case "auth/user-not-found":
-        errorMessage = "המשתמש לא נמצא";
-        break;
-      case "auth/wrong-password":
-        errorMessage = "סיסמה שגויה";
-        break;
-      case "auth/invalid-email":
-        errorMessage = "אימייל לא תקין";
-        break;
+      case "auth/user-not-found": errorMessage = "המשתמש לא נמצא"; break;
+      case "auth/wrong-password": errorMessage = "סיסמה שגויה"; break;
+      case "auth/invalid-email":  errorMessage = "אימייל לא תקין"; break;
     }
-
     showCustomAlert("שגיאה", errorMessage, "error");
   }
 };
 
-// 📌 פונקציית התנתקות
-export const signOutUser = async (
-  showCustomAlert: (
-    title: string,
-    message: string,
-    type: "success" | "error"
-  ) => void,
+// -------- Google Sign-In (Native, Dev Client) --------
+let googleInFlight = false;
+
+export const signInWithGoogle = async (
+  setUserInfo: (user: UserInfo) => void,
+  setIsConnected: (status: boolean) => void,
+  showCustomAlert: (title: string, message: string, type: "success" | "error") => void,
   router: Router
-): Promise<void> => {
+) => {
+  if (googleInFlight) {
+    console.log('⏳ Google sign-in already in progress; ignoring duplicate tap.');
+    return;
+  }
+  googleInFlight = true;
+
   try {
-    console.log("🔐 Signing out user...");
+    console.log("🔐 Starting Google sign-in (native)...");
     
-    // 🔥 התנתקות מ-Firebase
-    await signOut(auth);
+    // ודא שGoogle Sign-In מוגדר
+    configureGoogleSignIn();
     
-    // 🗑️ מחיקת מידע מ-AsyncStorage
-    await AsyncStorage.removeItem("token");
-    await AsyncStorage.removeItem("userInfo");
-    
-    console.log("✅ Logout successful");
-    showCustomAlert("הצלחה", "התנתקת בהצלחה", "success");
-    
-    // 🔄 ניווט לעמוד הלוגין
-    router.replace("/(auth)/login");
-    
+    if (!SOCKET_SERVER_URL) {
+      showCustomAlert("שגיאה", "שגיאת הגדרות שרת.", "error");
+      return;
+    }
+
+    // ודא שקראת configureGoogleSignIn() פעם אחת בעליית האפליקציה
+    if (Platform.OS === 'android') {
+      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+    }
+
+    // התחברות ומעבר ל-Firebase
+    const googleRes = await GoogleSignin.signIn();
+    console.log(googleRes);
+    if (!googleRes.data?.idToken) {
+      showCustomAlert("שגיאה", "לא התקבל ID Token מ-Google", "error");
+      return;
+    }
+    const credential = GoogleAuthProvider.credential(googleRes.data.idToken);
+    const userCredential = await signInWithCredential(auth, credential);
+    const firebaseToken = await userCredential.user.getIdToken();
+
+    // שרת
+    const response = await axios.post(
+      `${SOCKET_SERVER_URL}/api/users/signin`,
+      { token: firebaseToken },
+      { timeout: 10000 }
+    );
+
+    const { uid, email, name, phoneNumber, balance } = response.data as UserInfo;
+    const userInfoData: UserInfo = { uid, email, name, phoneNumber, balance };
+
+    await AsyncStorage.setItem("token", firebaseToken);
+    await AsyncStorage.setItem("userInfo", JSON.stringify(userInfoData));
+
+    setUserInfo(userInfoData);
+    setIsConnected(true);
+    showCustomAlert("הצלחה", `ברוך הבא ${name || email}!`, "success");
+    router.replace("/(protected)/(tabs)/(home)");
   } catch (error: any) {
-    console.error("❌ Logout error:", error);
-    showCustomAlert("שגיאה", "שגיאה בעת התנתקות. נסה שוב.", "error");
+    console.error('❌ Google sign-in error:', error);
+    let errorMessage = 'שגיאה בהתחברות עם Google';
+    if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+      errorMessage = 'ההתחברות בוטלה';
+    } else if (error.code === statusCodes.IN_PROGRESS) {
+      errorMessage = 'התחברות בתהליך';
+    } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+      errorMessage = 'Google Play Services לא זמין/דורש עדכון';
+    }
+    // 12500 / DEVELOPER_ERROR לרוב מצביע על SHA-1 חסר/שגוי ב-Firebase/GCP
+    showCustomAlert('שגיאה', errorMessage, 'error');
+  } finally {
+    googleInFlight = false;
   }
 };

@@ -1,5 +1,7 @@
 # OS junk
 .DS_Store
+*/.DS_Store
+**/.DS_Store
 
 # Node
 node_modules/
@@ -19,6 +21,9 @@ coverage/
 .env
 .env.*
 *.local
+**/.env
+**/.env.*
+**/*.local
 
 # Firebase admin keys (safety)
 *-firebase-adminsdk-*.json
@@ -52,6 +57,7 @@ web-build/
 # Logs
 logs/
 *.log
+**/*.log
 
 # TypeScript
 *.tsbuildinfo
